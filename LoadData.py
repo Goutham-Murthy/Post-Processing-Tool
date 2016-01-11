@@ -8,16 +8,17 @@ def getWeatherData(location):
     global_radiation = []
     
     #Opening the TRY data. The delimiter is ;.
-    reader = open(location+"./Wetter_Bottrop_Modelica.csv")
+    reader = open(location+"/Wetter_Bottrop_Modelica.csv")
     csv_reader = csv.reader(reader,delimiter='\t')
     
     for row in islice(csv_reader,2,None):
         global_radiation.append(float(row[14])+float(row[15]))
     reader.close()
+    print "Weather data Loaded"
     return global_radiation
 
 def getHeatProfiles(location):
-    wb = xlrd.open_workbook(location+'./Heat profiles.xlsx')
+    wb = xlrd.open_workbook(location+'/Heat profiles.xlsx')
     
     heat_profiles = []
     building_ids = []
@@ -37,4 +38,5 @@ def getHeatProfiles(location):
                     thermal_profile.append(value)           
             heat_profiles.append(thermal_profile)
             building_ids.append(building)
+    print "Building Heat Profile loaded"
     return heat_profiles,building_ids

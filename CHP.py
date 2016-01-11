@@ -18,9 +18,10 @@ class CHP:
         self.thermal_capacity = thermal_capacity
         self.th_efficiency = th_efficiency
         self.el_efficiency = el_efficiency
-        self.heat_hourly = 0
+        self.heat_hourly = [0]*8760
         self.heat = 0
         self.annuity = 0
+        print 'CHP-',thermal_capacity
         
     @abc.abstractmethod
     def getCHPHeat(self,required_heat,storage_capacity):
@@ -28,14 +29,11 @@ class CHP:
 
 class OnOffCHP(CHP):
     
-    def getCHPHeat(self,required_heat):
-        if required_heat <= self.thermal_capacity:
-            self.heat += required_heat
-            self.heat_hourly = required_heat
-            required_heat = 0
+    def getCHPHeat(self,required_heat,hour):
+        if required_heat < self.thermal_capacity:
             return required_heat
         else:
             self.heat += self.thermal_capacity
-            self.heat_hourly = self.thermal_capacity
+            self.heat_hourly[hour] = self.thermal_capacity
             required_heat -= self.thermal_capacity
             return required_heat

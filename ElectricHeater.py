@@ -14,18 +14,19 @@ class ElectricHeater:
         self.model = model
         self.thermal_capacity = thermal_capacity
         self.efficiency = efficiency
-        self.heat_hourly = 0
+        self.heat_hourly = [0]*8760
         self.heat = 0
+        print 'Elhe-',thermal_capacity
     
-    def getElHeHeat(self,required_heat):
+    def getElHeHeat(self,required_heat,hour):
         if required_heat <= self.thermal_capacity:
             self.heat += required_heat
-            self.heat_hourly = required_heat
+            self.heat_hourly[hour] = required_heat
             required_heat = 0
             return required_heat
         else:
             self.heat += self.thermal_capacity
-            self.heat_hourly = self.thermal_capacity
+            self.heat_hourly[hour] = self.thermal_capacity
             required_heat -= self.thermal_capacity
             return required_heat
 
