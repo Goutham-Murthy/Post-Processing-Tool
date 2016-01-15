@@ -6,8 +6,8 @@ given in VDI 2067. This module is to be included in each technology class, for
 example: boiler class, CHP class etc. It contains the following functions:
 1) get_annuity_factor : Used to calculate the annuity factor.
 2) get_Ank : used to calcualte the capital costs related annuity.
-3) get_b : Used to calculate the price- dynamic cash value factor."""
-
+3) get_b : Used to calculate the price- dynamic cash value factor.
+"""
 import math
 
 def get_annuity_factor(q,obperiod):
