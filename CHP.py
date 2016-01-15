@@ -1,31 +1,36 @@
 # -*- coding: utf-8 -*-
-import abc
-import Annuity
-import math
+import annuity
 
-class CHP:
-    """CHP class
-    
+
+class CHP(annuity.Annuity):
+    """Class representing CHP technology.
+
     Attributes:
-    model : Model of the boiler
-    thermal_capacity : Thermal capacity of the CHP [kWh]
-    electrical_capacity : Electrical capacity of the CHP unit [kWh]
-    th_efficiency : Thermal efficiency of the CHP [decimal<1]
-    heat: Heat provided by the CHP unit [kWh]
-    heat_hourly : Hourly values of the heat provided by the CHP unit [kWh]
-    annuity : Annuity of the CHP"""
+    model (string)              : Model of the boiler.
+    thermal_capacity (float)    : Thermal capacity of the CHP [kW].
+    electrical_capacity (float) : Electrical capacity of the CHP unit [kW].
+    th_efficiency (float)       : Thermal efficiency of the CHP [decimal<1].
+    el_efficiency (float)       : Electrical efficiency of the CHP [decimal<1].
+    heat_yearly (float)         : Heat provided by the CHP unit over the
+                                 year[kWh].
+    heat_hourly (float)         : Hourly values of the heat demand met by
+                                 the CHP unit [kWh].
+    annuity                     : Annuity of the CHP [Euros].
+    """
 
-    def __init__(self,model,thermal_capacity, electrical_capacity, th_efficiency, el_efficiency):
+    def __init__(self, model, thermal_capacity, electrical_capacity,
+                 th_efficiency, el_efficiency):
         self.model = model
         self.thermal_capacity = thermal_capacity
         self.electrical_capacity = electrical_capacity
         self.th_efficiency = th_efficiency
         self.el_efficiency = el_efficiency
+        # Initialising other variables to zero.
         self.heat_hourly = [0]*8760
         self.heat = 0
         self.annuity = 0
-        print 'CHP-',thermal_capacity
-        
+        print 'CHP-', thermal_capacity
+
     def getEmissions(self):
         return 760
         
