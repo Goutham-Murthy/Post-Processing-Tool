@@ -18,7 +18,7 @@ def getWeatherData(location):
     return global_radiation
 
 def getHeatProfiles(location):
-    wb = xlrd.open_workbook(location+'/Heat profiles_all.xlsx')
+    wb = xlrd.open_workbook(location+'/Heat profiles.xlsx')
     
     heat_profiles = []
     building_ids = []

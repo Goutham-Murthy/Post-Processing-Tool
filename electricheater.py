@@ -10,7 +10,7 @@ class ElectricHeater(annuity.Annuity):
 
     Attributes:
         model (string)          : Model of the Electric Heater.
-        thermal_capacity (float): Thermal capacity of the Electric Heater [kW].
+        th_capacity (float): Thermal capacity of the Electric Heater [kW].
         heat_yearly (float)     : Sum value of heat provided by the electric
                                  heater unit over the year [kWh].
         heat_hourly (float)     : Hourly values of the heat provided by the
@@ -28,25 +28,26 @@ class ElectricHeater(annuity.Annuity):
     Extends:
         Annuity class
         """
-    def __init__(self, model, thermal_capacity):
+    def __init__(self, model, th_capacity):
         """ Constructor method for Electric Heater Class
 
         Args:
             model (string)              : Model of the Electric Heater.
-            thermal_capacity (float)    : Thermal capacity of the Electric
+            th_capacity (float)    : Thermal capacity of the Electric
                                          Heater [kW].
         """
         self.model = model
-        self.thermal_capacity = thermal_capacity
+        self.th_capacity = th_capacity
         # Initialising other variables to zero.
         self.heat_hourly = [0]*8760
         self.heat_yearly = 0
         self.annuity = 0
-        self.emissions = self.getEmissions()
+        self.emissions = 0
         self.deperiod = 15
         self.finst = 0.01
         self.fwins = 0.01
         self.effop = 5
+        annuity.Annuity.__init__(self)
 
     def get_heat(self, required_heat, hour):
         """
@@ -63,7 +64,7 @@ class ElectricHeater(annuity.Annuity):
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
-        if required_heat <= self.thermal_capacity:
+        if required_heat <= self.th_capacity:
             self.heat_yearly += required_heat
             self.heat_hourly[hour] = required_heat
             required_heat = 0
@@ -71,9 +72,9 @@ class ElectricHeater(annuity.Annuity):
         # If hourly thermal demand is grreater than the capacity, meet as much
         # as possible.
         else:
-            self.heat_yearly += self.thermal_capacity
-            self.heat_hourly[hour] = self.thermal_capacity
-            required_heat -= self.thermal_capacity
+            self.heat_yearly += self.th_capacity
+            self.heat_hourly[hour] = self.th_capacity
+            required_heat -= self.th_capacity
             return required_heat
 
     def set_emissions(self):
@@ -106,12 +107,12 @@ class ElectricHeater(annuity.Annuity):
         """
         # Capital related costs for the electrical heater include price of
         # purchase and installation costs
-        self.A0 = 53.938*(self.thermal_capacity*1000)**0.2685
+        self.A0 = 53.938*(self.th_capacity*1000)**0.2685
         self.set_Ank()
 
         # Demand related costs include price of fuel to generate the required
         # heat i.e. electricity price
-        DRC = self.heat*self.electricity_price
+        DRC = self.heat_yearly*self.electricity_price
         self.Anv = DRC*self.a*self.bv
 
         # Operation related costs include maintanance and repair

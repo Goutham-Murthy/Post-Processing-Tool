@@ -1,9 +1,14 @@
-import GenerateCases
-import os
+import sys
+from PyQt4 import QtGui, uic
 
-building1 = GenerateCases.PostProcessingTool(building_id="building1")
-building1.generate_cases()
-os.chdir("E:/Post Processing Tool/Output")
-ffwfq = GenerateCases.PostProcessingTool(building_id="building2")
-ffwfq.generate_cases()
 
+class MyWindow(QtGui.QMainWindow):
+    def __init__(self):
+        super(MyWindow, self).__init__()
+        uic.loadUi('GUI.ui', self)
+        self.show()
+
+if __name__ == '__main__':
+    app = QtGui.QApplication(sys.argv)
+    window = MyWindow()
+    sys.exit(app.exec_())

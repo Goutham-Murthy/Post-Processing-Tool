@@ -62,6 +62,7 @@ class Boiler(annuity.Annuity):
             self.finst = 1.0
             self.fwins = 2.0
             self.effop = 20
+        annuity.Annuity.__init__(self)
 
     def get_heat(self, required_heat, hour):
         """
@@ -122,7 +123,7 @@ class Boiler(annuity.Annuity):
         self.set_Ank()
 
         # Demand related costs include price of fuel to produce required heat
-        DRC = self.gas_price*self.heat/self.efficiency
+        DRC = self.gas_price*self.heat_yearly/self.efficiency
         self.Anv = DRC*self.a*self.bv
 
         # Operation related costs include maintanance and repair

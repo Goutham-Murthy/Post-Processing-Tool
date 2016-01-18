@@ -6,8 +6,8 @@ import itertools
 import xlsxwriter
 import shutil
 import CHP
-import Boiler
-import ElectricHeater
+import boiler
+import electricheater
 
 
 class PreProcessingTool:
@@ -41,7 +41,7 @@ class PreProcessingTool:
                  min_el_technologies=1,
                  max_th_technologies=2,
                  min_th_technologies=0,
-                 hourly_excels=True,
+                 hourly_excels=False,
                  location="D:/aja-gmu/Simulation_Files/Output"):
         self.building_id = building_id
         self.thermal_profile = thermal_profile
@@ -57,7 +57,6 @@ class PreProcessingTool:
         self.maxr_th_power, self.maxr_hours = self.get_maxr(thermal_profile)
         self.peak_th_power = max(thermal_profile)
         self.KPI = []
-        self.EconomicFactors = []
 
     def generate_cases(self):
         """
@@ -99,8 +98,8 @@ class PreProcessingTool:
             # Make seperate directories depending on the number of technologies
             # presentin the system
             if (number <= self.max_el_technologies + self.max_th_technologies-1
-                and number >= self.min_el_technologies +
-                self.min_th_technologies) and self.hourly_excels:
+                    and number >= self.min_el_technologies +
+                    self.min_th_technologies) and self.hourly_excels:
 
                 if not os.path.exists(str(number)+'technologies'):
                     os.makedirs(str(number)+'technologies')
@@ -118,13 +117,13 @@ class PreProcessingTool:
                     # Proceed further is the number of technologies in the
                     # system are suitable
                     if (len(set(system) & set(self.el_technologies)) <=
-                        self.max_el_technologies
-                        and len(set(system) & set(self.th_technologies)) <=
-                        self.max_th_technologies
-                        and len(set(system) & set(self.el_technologies)) >=
-                        self.min_el_technologies
-                        and len(set(system) & set(self.th_technologies)) >=
-                        self.min_th_technologies):
+                            self.max_el_technologies
+                            and len(set(system) & set(self.th_technologies)) <=
+                            self.max_th_technologies
+                            and len(set(system) & set(self.el_technologies)) >=
+                            self.min_el_technologies
+                            and len(set(system) & set(self.th_technologies)) >=
+                            self.min_th_technologies):
 
                         # Create classes of the technologies
                         print '\n\n====================System-', system
@@ -135,7 +134,10 @@ class PreProcessingTool:
                             excel = xlsxwriter.Workbook(self.
                                                         get_system_name(system)
                                                         + ".xls")
-                            for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
+                            for th_order in \
+                                itertools.permutations(set(system) &
+                                                       set(self.th_technologies
+                                                           )):
                                 excel.add_worksheet(self.
                                                     get_thermal_priority
                                                     (th_order))
@@ -144,165 +146,85 @@ class PreProcessingTool:
                         # -----------------------------------------------------
                         # Generating different thermal priorities for each
                         # electrical priority and iterating through them
-                        for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
+                        for th_order in \
+                            itertools.permutations(set(system) &
+                                                   set(self.th_technologies)):
                             self.perform_calculations(th_order)
                             self.update_KPI(system, th_order)
                             if self.hourly_excels:
-                                self.write_hourly_excel(self.getSystemName(system)+".xls",self.getThermalPriority(th_order),th_order)
+                                self.write_hourly_excel(self.get_system_name(system)+".xls", self.get_thermal_priority(th_order), th_order)
         self.write_KPI_excel()
         return
 
     def update_KPI(self, system, th_order):
-        # CHP variables
-        CHP_annuity = 0
-        CHP_a, CHP_CRC, CHP_bonus, CHP_Ank = 0, 0, 0, 0
-        CHP_Anv, CHP_Anb, CHP_Ane = 0, 0, 0
-        CHP_capacity = 0
-        CHP_heat = 0
-        CHP_on_count = 0
-        CHP_hours = 0
-        CHP_annuity = 0
-
-        # Boiler
-        B_annuity = 0
-        B_CRC, B_Ank, B_Anv, B_Anb = 0, 0, 0, 0
-        B_capacity = 0
-        B_heat = 0
-        B_annuity = 0
-
-        # Thermal Storage
-        ThSt_annuity = 0
-        ThSt_capacity = 0
-        ThSt_heat = 0
-        ThSt_annuity = 0
-
-        # Solar Thermal
-        SolTh_annuity = 0
-        SolTh_capacity = 0
-        SolTh_heat = 0
-        SolTh_annuity = 0
-
-        # Electric heater
-        ElHe_annuity = 0
-        ElHe_capacity = 0
-        ElHe_heat = 0
-        ElHe_annuity = 0
-
-        # PV
-        PV_annuity = 0
-        PV_capacity = 0
-        PV_heat = 0
-        PV_annuity = 0
-
+        Total_annuity = 0
         Total_emissions = 0
+        Total_pef = 0
         Total_loss = 0
         sc_percentage = 0
 
         if 'CHP' in system:
             self.OnOffCHP.set_annuity()
-            CHP_annuity = self.OnOffCHP.annuity
-            CHP_a = self.OnOffCHP.a
-            CHP_CRC = self.OnOffCHP.A0
-            CHP_bonus = self.OnOffCHP.bonus
-            CHP_Ank = self.OnOffCHP.Ank
-            CHP_Anv = self.OnOffCHP.Anv
-            CHP_Anb = self.OnOffCHP.Anb
-            CHP_Ane = self.OnOffCHP.Ane
-            CHP_capacity = self.OnOffCHP.thermal_capacity
-            CHP_heat = self.OnOffCHP.heat_yearly
-            CHP_annuity = self.OnOffCHP.annuity
-            # Yet to be programmed
-            CHP_on_count = 0
-            CHP_hours = 0
             self.OnOffCHP.set_emissions()
+            Total_annuity += self.OnOffCHP.annuity
+            Total_emissions += self.OnOffCHP.emissions
 
         if 'B' in system:
             self.B.set_annuity()
-            B_annuity = self.B.annuity
-            B_capacity = self.B.th_capacity
-            boiler_heat = self.B.heat
+            self.B.set_emissions()
+            Total_annuity += self.B.annuity
+            Total_emissions += self.B.emissions
 
         if 'ElHe' in system:
             self.ElHe.set_annuity()
-            ElHe_annuity = self.ElHe.annuity
-            Total_emissions += self.ElHe.getEmissions()
-            ElHe_capacity = self.ElHe.thermal_capacity
-            ElHe_heat = self.ElHe.heat
+            self.ElHe.set_emissions()
+            Total_annuity += self.ElHe.annuity
+            Total_emissions += self.ElHe.emissions
 
         if 'ThSt' in system:
             self.ThSt.set_annuity()
-            ThSt_annuity = self.ThSt.getAnnuity()
-            Total_loss = self.ThSt.getLosses()
-            ThSt_capacity = self.ThSt.thermal_capacity_l
-            ThSt_heat = self.ThSt.heat
+            Total_annuity += self.ThSt.annuity
+            Total_emissions += self.ThSt.emissions
 
         if 'SolTh' in system:
             self.SolTh.set_annuity()
-            SolTh_annuity = self.SolTh.getAnnuity()
-            SolTh_capacity = self.SolTh.capacity
-            SolTh_heat = self.SolTh.heat
+            Total_annuity += self.SolTh.annuity
+            Total_emissions += self.SolTh.emissions
 
         if 'PV' in system:
-            self.PV.set_annuity()
-            PV_annuity = self.PV.getAnnuity()
-            Total_emissions += self.PV.getEmissions()
-            PV_capacity = self.PV.capacity
-            PV_heat = self.PV.heat
+            self.Pv.set_annuity()
+            self.PV.set_emissions()
+            Total_annuity += self.PV.annuity
+            Total_emissions += self.PV.emissions
 
-        Total_annuity = (CHP_annuity + B_annuity + ThSt_annuity +
-                         SolTh_annuity + ElHe_annuity + PV_annuity)
-        Total_pef = 0
-
-        self.KPI.append([self.getSystemName(system),
-                         self.getThermalPriority(th_order),
+        self.KPI.append([self.get_system_name(system),
+                         self.get_thermal_priority(th_order),
                          '',
                          Total_annuity,
                          Total_emissions,
                          Total_pef,
                          Total_loss,
-                         CHP_capacity,
-                         CHP_heat,
-                         CHP_on_count,
-                         CHP_hours,
-                         boiler_capacity,
-                         boiler_heat,
-                         ThSt_capacity,
-                         ThSt_heat,
-                         SolTh_capacity,
-                         SolTh_heat,
-                         ElHe_capacity,
-                         ElHe_heat,
-                         PV_capacity,
-                         PV_heat,
-                         CHP_annuity,
-                         boiler_annuity,
-                         th_storage_annuity,
-                         sol_thermal_annuity,
-                         el_heater_annuity,
-                         PV_annuity,
+                         self.OnOffCHP.th_capacity if 'CHP' in system else 0,
+                         self.OnOffCHP.heat_yearly if 'CHP' in system else 0,
+                         0,
+                         0,
+                         self.B.th_capacity if 'B' in system else 0,
+                         self.B.heat_yearly if 'B' in system else 0,
+                         self.ThSt.th_capacity if 'ThSt' in system else 0,
+                         self.ThSt.heat_yearly if 'ThSt' in system else 0,
+                         self.SolTh.th_capacity if 'SolTh' in system else 0,
+                         self.SolTh.heat_yearly if 'SolTh' in system else 0,
+                         self.ElHe.th_capacity if 'ElHe' in system else 0,
+                         self.ElHe.heat_yearly if 'ElHe' in system else 0,
+                         self.PV.th_capacity if 'PV' in system else 0,
+                         self.PV.heat_yearly if 'PV' in system else 0,
+                         self.OnOffCHP.annuity if 'CHP' in system else 0,
+                         self.B.annuity if 'B' in system else 0,
+                         self.ThSt.annuity if 'ThSt' in system else 0,
+                         self.SolTh.annuity if 'SolTh' in system else 0,
+                         self.ElHe.annuity if 'ElHe' in system else 0,
+                         self.PV.annuity if 'PV' in system else 0,
                          sc_percentage])
-
-        self.EconomicFactors.append([self.getSystemName(system),
-                                     self.getThermalPriority(th_order),
-                                    Total_annuity,
-                                    CHP_capacity,
-                                    CHP_heat,
-                                    CHP_heat*.5,
-                                    CHP_a,
-                                    CHP_CRC,
-                                    CHP_bonus,
-                                    CHP_Ank,
-                                    CHP_Anv,
-                                    CHP_Anb,
-                                    CHP_Ane,
-                                    CHP_annuity,
-                                    boiler_capacity,
-                                    boiler_heat,
-                                    boiler_CRC,
-                                    boiler_Ank,
-                                    boiler_Anv,
-                                    boiler_Anb,
-                                    boiler_annuity])
 
     def get_maxr(self, thermal_profile):
         # Sort thermal demand in decreasing order for the load distribution
@@ -320,7 +242,7 @@ class PreProcessingTool:
         print maxr, hours, thermal_profile[hours]
         return thermal_profile[hours], hours
 
-    def initialiseTechnologies(self, system):
+    def initialise_technologies(self, system):
         # ---------------------------------------------------------------------
         # CHP
         # If CHP is present, it will check for a peak load device. If peak load
@@ -329,44 +251,43 @@ class PreProcessingTool:
         if 'CHP' in system:
             if 'ElHe' in system or 'B' in system:
                 self.OnOffCHP = CHP.OnOffCHP('YahooCHP',
-                                             self.maxr_thermal_power,
-                                             0.3*self.maxr_thermal_power,
+                                             self.maxr_th_power,
+                                             0.3*self.maxr_th_power,
                                              0.6, 0.3)
             else:
                 self.OnOffCHP = CHP.OnOffCHP('YahooCHP',
-                                             self.peak_thermal_power,
-                                             0.3*self.maxr_thermal_power,
+                                             self.peak_th_power,
+                                             0.3*self.maxr_th_power,
                                              0.6, 0.3)
 
     # -------------------------------------------------------------------------
     # Boiler
         # If boiler is present, dimension it to peak thermal demand
         if 'B' in system:
-            self.B = Boiler.Boiler('YahooB', self.peak_thermal_power, 0.98)
+            self.B = boiler.Boiler('YahooB', self.peak_th_power, 0.98)
 
     # -------------------------------------------------------------------------
     # Electric Resistance Heater
         # If electric heater is present, dimension it to peak thermal demand
         if 'ElHe' in system:
-            self.ElHe = ElectricHeater.ElectricHeater('Model',
-                                                      self.peak_thermal_power,
-                                                      0.98)
+            self.ElHe = electricheater.ElectricHeater('Model',
+                                                      self.peak_th_power)
         return
 
-    def performCalculations(self, th_order):
+    def perform_calculations(self, th_order):
         for i in range(0, 8760):
             q_hourly = self.thermal_profile[i]
 
             for technology in th_order:
                 if technology is 'CHP' and q_hourly > 0:
-                    q_hourly = self.OnOffCHP.getHeat(q_hourly, i)
+                    q_hourly = self.OnOffCHP.get_heat(q_hourly, i)
                 if technology is 'B' and q_hourly > 0:
-                    q_hourly = self.B.getHeat(q_hourly, i)
+                    q_hourly = self.B.get_heat(q_hourly, i)
                 if technology is 'ElHe' and q_hourly > 0:
-                    q_hourly = self.ElHe.getHeat(q_hourly, i)
+                    q_hourly = self.ElHe.get_heat(q_hourly, i)
         return
 
-    def writeHourlyExcel(self, workbook_name, worksheet_name, th_order):
+    def write_hourly_excel(self, workbook_name, worksheet_name, th_order):
         # ---------------------------------------------------------------------
         # write all values into the worksheet
 
@@ -401,7 +322,7 @@ class PreProcessingTool:
                 count += 1
         workbook.save(workbook_name)
 
-    def getSystemName(self, system):
+    def get_system_name(self, system):
         system_name = ""
         count = 1
         for i in system:
@@ -412,7 +333,7 @@ class PreProcessingTool:
                 count += 1
         return system_name
 
-    def getThermalPriority(self, th_order):
+    def get_thermal_priority(self, th_order):
         th_priority = ""
         count = 1
         for elements in th_order:
@@ -423,7 +344,7 @@ class PreProcessingTool:
                 count += 1
         return th_priority
 
-    def writeKPIExcel(self):
+    def write_KPI_excel(self):
         os.chdir(self.location+"/"+self.building_id)
         excel = xlsxwriter.Workbook(self.building_id+".xls")
         worksheet = excel.add_worksheet("Thermal Profile")
@@ -514,34 +435,34 @@ class PreProcessingTool:
         # Insert the chart into the worksheet.
         worksheet.insert_chart('V4', chart)
 
-        worksheet = excel.add_worksheet("Economic Factors in Detail")
-        worksheet.write(0, 0, "System")
-        worksheet.write(0, 1, "Thermal Priority")
-        worksheet.write(0, 2, "Total Annuity(Euros)")
-        worksheet.write(0, 3, "Th Capacity of CHP(kW)")
-        worksheet.write(0, 4, "Heat generated by the CHP(kWh)")
-        worksheet.write(0, 5, "Electricity generated by the CHP(kWh)")
-        worksheet.write(0, 6, "Annuity factor")
-        worksheet.write(0, 7, "CHP Capital Costs(Euros)")
-        worksheet.write(0, 8, "CHP bonus(Euros)")
-        worksheet.write(0, 9, "CHP Capital related Annuity(Euros)")
-        worksheet.write(0, 10, "CHP demand related Annuity(Euros)")
-        worksheet.write(0, 11, "CHP operation related Annuity(Euros)")
-        worksheet.write(0, 12, "CHP proceeds related Annuity(Euros)")
-        worksheet.write(0, 13, "CHP Total Annuity(Euros)")
-        worksheet.write(0, 14, "Boiler Capacity(kW)")
-        worksheet.write(0, 15, "Heat generated by the Boiler(kWh)")
-        worksheet.write(0, 16, "Boiler Capital related Costs(Euros)")
-        worksheet.write(0, 17, "Boiler Capital related Annuity(Euros)")
-        worksheet.write(0, 18, "Boiler demand related Annuity(Euros)")
-        worksheet.write(0, 19, "Boiler operation related Annuity(Euros)")
-        worksheet.write(0, 20, "Total Boielr Annuity(Euros)")
-        row = 1
-        for item in self.EconomicFactors:
-            for column in range(0, 21):
-                worksheet.write(row, column, item[column])
-                column += 1
-            row += 1
+#        worksheet = excel.add_worksheet("Economic Factors in Detail")
+#        worksheet.write(0, 0, "System")
+#        worksheet.write(0, 1, "Thermal Priority")
+#        worksheet.write(0, 2, "Total Annuity(Euros)")
+#        worksheet.write(0, 3, "Th Capacity of CHP(kW)")
+#        worksheet.write(0, 4, "Heat generated by the CHP(kWh)")
+#        worksheet.write(0, 5, "Electricity generated by the CHP(kWh)")
+#        worksheet.write(0, 6, "Annuity factor")
+#        worksheet.write(0, 7, "CHP Capital Costs(Euros)")
+#        worksheet.write(0, 8, "CHP bonus(Euros)")
+#        worksheet.write(0, 9, "CHP Capital related Annuity(Euros)")
+#        worksheet.write(0, 10, "CHP demand related Annuity(Euros)")
+#        worksheet.write(0, 11, "CHP operation related Annuity(Euros)")
+#        worksheet.write(0, 12, "CHP proceeds related Annuity(Euros)")
+#        worksheet.write(0, 13, "CHP Total Annuity(Euros)")
+#        worksheet.write(0, 14, "Boiler Capacity(kW)")
+#        worksheet.write(0, 15, "Heat generated by the Boiler(kWh)")
+#        worksheet.write(0, 16, "Boiler Capital related Costs(Euros)")
+#        worksheet.write(0, 17, "Boiler Capital related Annuity(Euros)")
+#        worksheet.write(0, 18, "Boiler demand related Annuity(Euros)")
+#        worksheet.write(0, 19, "Boiler operation related Annuity(Euros)")
+#        worksheet.write(0, 20, "Total Boielr Annuity(Euros)")
+#        row = 1
+#        for item in self.EconomicFactors:
+#            for column in range(0, 21):
+#                worksheet.write(row, column, item[column])
+#                column += 1
+#            row += 1
 
         excel.close()
         return
