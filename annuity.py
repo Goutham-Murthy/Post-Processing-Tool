@@ -21,24 +21,25 @@ class Annuity(object):
         self.bv = self.b
         self.bb = self.get_b(1.02)
         self.bi = self.b
+        self.be = self.b
         self.a = (self.q-1)/(1-self.q**(-self.obperiod))
         # Initialising other variables to -1
-        self.A0 = -1
-        self.Ank = -1
-        self.Anv = -1
-        self.Anb = -1
-        self.Ans = -1
-        self.Ane = -1
+        self.A0 = 0
+        self.Ank = 0
+        self.Anv = 0
+        self.Anb = 0
+        self.Ans = 0
+        self.Ane = 0
 
     def set_Ank(self):
         """Calculates the annuity of the capital related costs according to VDI 2067
 
         Args:
-            A0 (float): Initial investment amount.
-            r (float): Price change factor.
-            q (float): Interest rate factor.
-            obperiod (float): Number of years of the observation period.
-            deperiod (float): Number of years of the depreciation period.
+            A0 (float)          : Initial investment amount.
+            r (float)           : Price change factor.
+            q (float)           : Interest rate factor.
+            obperiod (float)    : Number of years of the observation period.
+            deperiod (float)    : Number of years of the depreciation period.
 
         Returns:
             Ank (float): Annuity of the capital related costs
@@ -49,15 +50,15 @@ class Annuity(object):
         # Cash of the 1st, 2nd.. nth procured replacement are calcualted and
         # stored in a A
         for i in range(1, n+1):
-            A.append(self.A0*(self.r**(i*self.deperiod))/
+            A.append(self.A0 * (self.r**(i * self.deperiod)) /
                      (self.q**(i*self.deperiod)))
         An = self.A0
         for i in range(0, n+1):
             An = An + A[i]
         # Rw is the residual value of the last procurement
-        Rw = self.A0*self.r**(n*self.deperiod)*\
-            ((n + 1)*self.deperiod - self.obperiod)/(self.deperiod*
-                                                     self.q**self.obperiod)
+        Rw = self.A0 * self.r**(n * self.deperiod) * \
+            ((n + 1) * self.deperiod - self.obperiod)/(self.deperiod *
+                                                       self.q**self.obperiod)
         self.Ank = (An - Rw)*self.a
         return
 
@@ -65,9 +66,9 @@ class Annuity(object):
         """Calculates the price dynamci cash value factor
 
         Args:
-            r (float): Price change factor.
-            q (float): Interest rate factor.
-            obperiod (float): Number of years of the observation period.
+            r (float)           : Price change factor.
+            q (float)           : Interest rate factor.
+            obperiod (float)    : Number of years of the observation period.
 
         Returns:
             b (float): price dynamic cash value factor"""
@@ -75,5 +76,5 @@ class Annuity(object):
         return b
 
     @abc.abstractmethod
-    def get_annuity(self):
+    def set_annuity(self):
         pass

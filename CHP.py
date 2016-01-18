@@ -1,150 +1,202 @@
 # -*- coding: utf-8 -*-
 import annuity
+import abc
+import math
 
 
 class CHP(annuity.Annuity):
     """Class representing CHP technology.
 
     Attributes:
-    model (string)              : Model of the boiler.
-    thermal_capacity (float)    : Thermal capacity of the CHP [kW].
-    electrical_capacity (float) : Electrical capacity of the CHP unit [kW].
-    th_efficiency (float)       : Thermal efficiency of the CHP [decimal<1].
-    el_efficiency (float)       : Electrical efficiency of the CHP [decimal<1].
-    heat_yearly (float)         : Heat provided by the CHP unit over the
+        model (string)          : Model of the boiler.
+        th_capacity (float)     : Thermal capacity of the CHP [kW].
+        el_capacity (float)     : Electrical capacity of the CHP unit [kW].
+        th_efficiency (float)   : Thermal efficiency of the CHP [<1].
+        el_efficiency (float)   : Electrical efficiency of the CHP [<1].
+        heat_yearly (float)     : Heat provided by the CHP unit over the
                                  year[kWh].
-    heat_hourly (float)         : Hourly values of the heat demand met by
+        heat_hourly (float)     : Hourly values of the heat demand met by
                                  the CHP unit [kWh].
-    annuity                     : Annuity of the CHP [Euros].
+        annuity                 : Annuity of the CHP [Euros].
+        deperiod(float)         : Depreciation period [years].
+        finst(float)            : Effort for annual repairs as percentage
+                                 of initial investment [%].
+        fwins(float)            : Effort for annual maintenance and inspection
+                                 as percentage of total investment [%].
+        effop(float)            : Effort for operation [hours/annum].
+    Extends:
+        Annuity class
     """
 
     def __init__(self, model, thermal_capacity, electrical_capacity,
                  th_efficiency, el_efficiency):
+        """Constructor method for class CHP.
+
+        Args:
+            model (string)          : Model of the CHP unit.
+            th_capacity (float)     : Thermal capacity of the CHP [kW].
+            el_capacity (float)     : Electrical capacity of the CHP [kW].
+            th_efficiency (float)   : Thermal efficiency of the CHP[decimal<1].
+            el_efficiency (float)   : Electrical efficiency of the CCHP unit.
+        """
         self.model = model
         self.thermal_capacity = thermal_capacity
         self.electrical_capacity = electrical_capacity
         self.th_efficiency = th_efficiency
         self.el_efficiency = el_efficiency
         # Initialising other variables to zero.
-        self.heat_hourly = [0]*8760
-        self.heat = 0
+        self.emissions = 0
         self.annuity = 0
-        print 'CHP-', thermal_capacity
+        self.bonus = 0
+        self.heat_hourly = [0]*8760
+        self.heat_yearly = 0
+        self.annuity = 0
+        self.deperiod = 15
+        self.effop = 10
+        self.fwins = 0.01
+        self.finst = 0.01
+        annuity.Annuity.__init__(self)
 
-    def getEmissions(self):
-        return 760
-        
-    @abc.abstractmethod
-    def getCHPHeat(self,required_heat,storage_capacity):
-        pass
+    def set_emissions(self):
+        """
+        Calculates the CO2 emissions of the CHP unit.
 
-class OnOffCHP(CHP):
-    
-    def getHeat(self,required_heat,hour):
-        if required_heat < self.thermal_capacity:
-            return required_heat
-        else:
-            self.heat += self.thermal_capacity
-            self.heat_hourly[hour] = self.thermal_capacity
-            required_heat -= self.thermal_capacity
-            return required_heat
-            
-    def getAnnuity(self,storage=False):
-        obperiod = 10
-        q = 1.07
-        r = 1.03
-        b = Annuity.getb(q=q,r=r,obperiod=obperiod)
-        bv = b
-        bb = Annuity.getb(q=q,r=1.02,obperiod=obperiod)
-        bi = b
-        deperiod = 15
-        effop = 10
-        fwins = 0.01
-        finst = 0.01
-        be = b
-    
-        #This is price per kWel.
-        bonus = self.getCHPBonus()
-    
-        #Taken fron ASUE data of 2015. Gives euro/kwel
+        Args:
+            None.
+
+        Returns:
+            None.
+        """
+        # emissions = (180*self.heat_yearly - 595*self.heat_yearly*.3)/.6
+        self.emissions = (2.5*self.heat_yearly/1000)
+        return
+
+    def set_annuity(self, storage=False):
+        """
+        Calculates the annuity of the boiler.
+
+        Args:
+            None.
+
+        Returns:
+            None..
+        """
+        # Capital related costs for the CHP include price of purchase and
+        # installation costs
+        # This is price per kWel.
+        # Taken fron ASUE data of 2015. Gives euro/kwel
         if self.electrical_capacity <= 10:
             CRC = 9.585*self.electrical_capacity**(-0.542)
-        elif self.electrical_capacity>10 and self.electrical_capacity <=100:
+        elif (self.electrical_capacity > 10 and
+              self.electrical_capacity <= 100):
             CRC = 5.438*self.electrical_capacity**(-0.351)
-        elif self.electrical_capacity>100 and self.electrical_capacity <=1000:
+        elif (self.electrical_capacity > 100 and
+              self.electrical_capacity <= 1000):
             CRC = 4.907*self.electrical_capacity**(-0.352)
         else:
             CRC = 1.7*460.89*self.electrical_capacity**(-0.015)
-        
-        #Multiplying to get euros
-        CRC = CRC*self.electrical_capacity*1000*1.4
-        a = Annuity.getAnnuityFactor(q=q,obperiod=obperiod)
-    
-        #Capital related costs for the CHP include price of purchase and installation costs
+
+        # Multiplying to get euros
+        self.A0 = CRC*self.electrical_capacity*1000*1.4
+
+        # No bonus if storage is not present.
         if storage:
-            Ank = Annuity.getAnk(A0=CRC-bonus,r=r,q=q,obperiod=obperiod,deperiod=deperiod)
-        else:
-            Ank = Annuity.getAnk(A0=CRC,r=r,q=q,obperiod=obperiod,deperiod=deperiod)
-    
-        #Demand related costs include price of fuel to generate the required heat
-        DRC = 0.0615*self.heat/self.th_efficiency
-        Anv = DRC*a*bv
-    
-        #Operation related costs include maintanance and repair
-        #ORC = 30*effop
-        #Ain = CRC*(finst+fwins)
-        #Anb = ORC*a*bb + Ain*a*bi
-        if self.electrical_capacity>0 and self.electrical_capacity<10:
-            ORC=(3.2619*self.electrical_capacity**0.1866)*self.heat/self.th_efficiency*self.el_efficiency/100
-        elif self.electrical_capacity>=10 and self.electrical_capacity<100:
-            ORC=(6.6626*self.electrical_capacity**-0.25)*self.heat/self.th_efficiency*self.el_efficiency/100
-        elif self.electrical_capacity>=100 and self.electrical_capacity<1000:
-            ORC=(6.2728*self.electrical_capacity**-0.283)*self.heat/self.th_efficiency*self.el_efficiency/100
-        Anb=ORC*a*bb
-        #Other costs
-        Ans = 0
-        
-        #Proceeds
-        E1= self.heat/self.th_efficiency*self.el_efficiency*0.10#*0.5 + 0.5*.3)
-        Ane = E1*a*be
-        E12 = self.heat/self.th_efficiency*self.el_efficiency*.3
-        Ane2 = E12*a*be
-        A = Ane - (Ank+Anv+Anb+Ans)
-        #    print 'CHP'
-        #    print 'A0=Investment amount=',CRC
-        #    print 'Ank=Capital Realted Annuity=',Ank
-        #    print 'Anv=Demand Related Annuity=',Anv
-        #    print 'Anb=Operation Related Annuity=',Anb
-        #    print 'Ane=Proceeds through feed-in-tariff=',Ane
-        #    print 'Ane=Proceeds total self consumption=',Ane2 
-        self.annuity = A
-        return a,CRC,bonus,Ank,Anv,Anb,Ane,A 
+            self.set_CHP_Bonus()
+        self.A0 -= self.bonus
+        self.set_Ank()
 
+        # Demand related costs include price of fuel to generate the required
+        # heat. Excluding energy tax of .55 cents frmo gas price
+        DRC = (self.gas_price - 0.0055)*self.heat/self.th_efficiency
+        self.Anv = DRC*self.a*self.bv
 
-    def getCHPBonus(self):
-        if self.electrical_capacity>0 and self.electrical_capacity<=1:
+        # Operation related costs include maintanance and repair
+        # ORC = 30*effop
+        # Ain = CRC*(finst+fwins)
+        # Anb = ORC*a*bb + Ain*a*bi
+        if self.electrical_capacity > 0 and self.electrical_capacity < 10:
+            ORC = ((3.2619 * self.electrical_capacity**0.1866) * self.heat /
+                   self.th_efficiency * self.el_efficiency / 100)
+        elif self.electrical_capacity >= 10 and self.electrical_capacity < 100:
+            ORC = ((6.6626 * self.electrical_capacity**-0.25) *
+                   self.heat/self.th_efficiency*self.el_efficiency/100)
+        elif (self.electrical_capacity >= 100 and
+              self.electrical_capacity < 1000):
+            ORC = ((6.2728 * self.electrical_capacity**-0.283) *
+                   self.heat/self.th_efficiency*self.el_efficiency/100)
+        self.Anb = ORC*self.a*self.bb
+
+        # Other costs
+        self.Ans = 0
+
+        # Proceeds
+        E1 = self.heat/self.th_efficiency*self.el_efficiency*0.10
+        self.Ane = E1*self.a*self.be
+
+        self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)
+        return
+
+    def set_CHP_Bonus(self):
+        if self.electrical_capacity > 0 and self.electrical_capacity <= 1:
             factor = 1900
-        elif self.electrical_capacity>1 and self.electrical_capacity<=4:
+        elif self.electrical_capacity > 1 and self.electrical_capacity <= 4:
             factor = 300
-        elif self.electrical_capacity>4 and self.electrical_capacity<=10:
+        elif self.electrical_capacity > 4 and self.electrical_capacity <= 10:
             factor = 100
-        elif self.electrical_capacity>10 and self.electrical_capacity<=20:
+        elif self.electrical_capacity > 10 and self.electrical_capacity <= 20:
             factor = 10
         else:
             factor = 1000000000
-            
-        if self.electrical_capacity>0 and self.electrical_capacity<=1:
+
+        if self.electrical_capacity > 0 and self.electrical_capacity <= 1:
             bonus = 1900
-        elif self.electrical_capacity>1 and self.electrical_capacity<=2:
+        elif self.electrical_capacity > 1 and self.electrical_capacity <= 2:
             bonus = 1900 + (self.electrical_capacity-1)*factor
-        elif self.electrical_capacity>2 and self.electrical_capacity<=5:
-            bonus = 2200 + (math.floor(self.electrical_capacity)-2)*300 + (self.electrical_capacity-math.floor(self.electrical_capacity))*factor
-        elif self.electrical_capacity>5 and self.electrical_capacity<=11:
-            bonus = 2900 + (math.floor(self.electrical_capacity)-5)*100 + (self.electrical_capacity-math.floor(self.electrical_capacity))*factor
-        elif self.electrical_capacity>11 and self.electrical_capacity<=20:
-            bonus = 3410 + (math.floor(self.electrical_capacity)-11)*10 + (self.electrical_capacity-math.floor(self.electrical_capacity))*factor
+        elif self.electrical_capacity > 2 and self.electrical_capacity <= 5:
+            bonus = 2200 + (math.floor(self.electrical_capacity)-2)*300 +\
+                (self.electrical_capacity -
+                 math.floor(self.electrical_capacity))*factor
+        elif self.electrical_capacity > 5 and self.electrical_capacity <= 11:
+            bonus = 2900 + (math.floor(self.electrical_capacity)-5)*100 +\
+                (self.electrical_capacity -
+                 math.floor(self.electrical_capacity))*factor
+        elif self.electrical_capacity > 11 and self.electrical_capacity <= 20:
+            bonus = 3410 + (math.floor(self.electrical_capacity)-11)*10 +\
+                (self.electrical_capacity -
+                 math.floor(self.electrical_capacity))*factor
         else:
             bonus = 0
-        
-        bonus = bonus*1.25
-        return bonus
+
+        self.bonus = bonus*1.25
+        return
+
+    @abc.abstractmethod
+    def get_heat(self, required_heat, storage_capacity):
+        pass
+
+
+class OnOffCHP(CHP):
+
+    def get_heat(self, required_heat, hour):
+        """
+        Given the required heat, function calculates the hourly heat met by the
+        CHP and returns the value for unsatified thermal demand.
+
+        Args:
+            required_heat (float)   : Hourly heat demand of the building [kWh].
+            hour (int)              : Hour of the year.
+
+        Returns:
+            required_heat (float)   : Hourly thermal demand not met by the
+                                     CHP unit [kWh].
+        """
+        if required_heat < self.thermal_capacity:
+            pass
+        else:
+            self.heat_yearly += self.thermal_capacity
+            self.heat_hourly[hour] = self.thermal_capacity
+            required_heat -= self.thermal_capacity
+        return required_heat
+
+# CHP = OnOffCHP('YahooCHP', 2.7, 1, 0.6, 0.3)
+# print CHP.bv
