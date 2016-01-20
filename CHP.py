@@ -171,32 +171,52 @@ class CHP(annuity.Annuity):
         return
 
     @abc.abstractmethod
-    def get_heat(self, required_heat, storage_capacity):
+    def get_heat(self,  required_heat, hour, ThSt=None):
         pass
 
 
 class OnOffCHP(CHP):
 
-    def get_heat(self, required_heat, hour):
+    def get_heat(self, required_heat, hour, ThSt=None):
         """
         Given the required heat, function calculates the hourly heat met by the
         CHP and returns the value for unsatified thermal demand.
 
         Args:
-            required_heat (float)   : Hourly heat demand of the building [kWh].
+            ThSt(class Thst)        : Thermal Storage instance when present.
+            required_heat (float)   : Hourly heat demand of the building
+                                         [kWh].
             hour (int)              : Hour of the year.
 
         Returns:
             required_heat (float)   : Hourly thermal demand not met by the
-                                     CHP unit [kWh].
+                                         CHP unit [kWh].
         """
-        if required_heat < self.th_capacity:
-            pass
+        if ThSt is not None:
+            if (required_heat < self.th_capacity):
+                # Excess heat can be stored in the storage unit.
+                # Check for availability of thermal storage unit.
+                if ((self.th_capacity - required_heat) <= ThSt.get_ThSt_avaiability(hour)):
+                    ThSt.store_heat((self.th_capacity - required_heat),
+                                    (hour))
+                    required_heat = 0
+                    self.heat_yearly += self.th_capacity
+                    self.heat_hourly[hour] = self.th_capacity
+                # If not available, do nothing.
+            else:
+                self.heat_yearly += self.th_capacity
+                self.heat_hourly[hour] = self.th_capacity
+                required_heat -= self.th_capacity
+            # If thermal demand is greater than capacity meet it as much as
+            # possible.
         else:
-            self.heat_yearly += self.th_capacity
-            self.heat_hourly[hour] = self.th_capacity
-            required_heat -= self.th_capacity
+            if (required_heat < self.th_capacity):
+                pass
+            else:
+                self.heat_yearly += self.th_capacity
+                self.heat_hourly[hour] = self.th_capacity
+                required_heat -= self.th_capacity
         return required_heat
 
 # CHP = OnOffCHP('YahooCHP', 2.7, 1, 0.6, 0.3)
-# print CHP.bv
+# CHP.get_heat(3, 31)

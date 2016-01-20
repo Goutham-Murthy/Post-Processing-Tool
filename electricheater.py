@@ -33,7 +33,7 @@ class ElectricHeater(annuity.Annuity):
 
         Args:
             model (string)              : Model of the Electric Heater.
-            th_capacity (float)    : Thermal capacity of the Electric
+            th_capacity (float)         : Thermal capacity of the Electric
                                          Heater [kW].
         """
         self.model = model
