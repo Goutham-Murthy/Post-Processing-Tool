@@ -437,7 +437,7 @@ class PreProcessingTool:
                 worksheet.write(0, count, 'Electricity provided by electrical \
                                          storage')
             elif technology is 'ElGrid':
-                worksheet.write(0, count, 'Electriciy Grid Production')
+                worksheet.write(0, count, 'Electricity Grid Production')
             count += 1
 
         for i in range(0, 8760):
@@ -446,23 +446,28 @@ class PreProcessingTool:
             count = 2 + len(th_order)
             for technology in el_order:
                 if technology is 'CHP':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.CHP.electricity_hourly[i])
                 elif technology is 'PV':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.PV.electricity_hourly[i])
                 elif technology is 'ElHe':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.ElHe.electricity_hourly[i])
                 elif technology is 'HP':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.HP.electricity_hourly[i])
                 elif technology is 'ElSt':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.ElSt.electricity_hourly[i])
                     count += 1
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.ElSt.electricity_hourly[i])
                 elif technology is 'ElGrid':
-                    worksheet.write(i+1, count, self.OnOffCHP.elec_hourly[i])
+                    worksheet.write(i+1, count, self.ElGrid.electricity_hourly[i])
             count += 1
         workbook.save(workbook_name)
 
-    def get_system_name(self, system):
+    @staticmethod
+    def get_system_name(system):
+        """
+        :param system: set of technologies in system
+        :return: system_name : set of technologies in system- suitably formatted for excel workbook naming
+        """
         system_name = ''
         count = 1
         for i in system:
@@ -473,7 +478,12 @@ class PreProcessingTool:
                 count += 1
         return system_name
 
-    def get_priority(self, order):
+    @staticmethod
+    def get_priority(order):
+        """
+        :param order: set of technologies in thermal or electrical priority
+        :return: priority : set of technologies in priority list- suitably formatted for excel worksheet naming
+        """
         priority = ''
         count = 1
         for elements in order:
@@ -484,7 +494,11 @@ class PreProcessingTool:
                 count += 1
         return priority
 
-    def write_KPI_excel(self):
+    def write_kpi_excel(self):
+        """
+        :param: none
+        :return: none
+        """
         os.chdir(self.location+'/'+self.building_id)
         excel = xlsxwriter.Workbook(self.building_id+'.xls')
         worksheet = excel.add_worksheet('Thermal Profile')

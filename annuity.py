@@ -71,8 +71,6 @@ class Annuity(object):
 
         Args:
             r (float)           : Price change factor.
-            q (float)           : Interest rate factor.
-            obperiod (float)    : Number of years of the observation period.
 
         Returns:
             b (float): price dynamic cash value factor"""
