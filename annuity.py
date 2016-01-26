@@ -8,8 +8,12 @@ import abc
 
 
 class Annuity(object):
-    def __init__(self, obperiod=10, q=1.07, r=1.03, gas_price=0.067,
-                 electricity_price=0.26):
+    def __init__(self, deperiod, effop, fwins, finst, obperiod=10, q=1.07,
+                 r=1.03, gas_price=0.067, electricity_price=0.26):
+        self.deperiod = deperiod
+        self.effop = effop
+        self.fwins = fwins
+        self.finst = finst
         self.obperiod = obperiod
         self.q = q
         self.r = r

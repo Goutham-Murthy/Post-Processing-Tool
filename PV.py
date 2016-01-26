@@ -40,7 +40,7 @@ class PV(annuity.Annuity):
         self.finst = .5
         self.fwins = 1
         self.effop = 5
-        annuity.Annuity.__init__(self)
+        super(PV, self).__init__(deperiod=25, effop=5, fwins=1, finst=0.5)
 
     def get_elec(self, required_elec, hour):
         """
@@ -53,14 +53,14 @@ class PV(annuity.Annuity):
             hour (int)              : Hour of the year.
 
         Returns:
-            required_heat (float)   : Hourly Electrical demand not met by the
-                                      boiler [kWh].
+            required_elec (float)   : Hourly electrical demand not met by the
+                                      PV [kWh].
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
-        if required_heat <= self.th_capacity:
-            self.heat_yearly += required_heat
-            self.heat_hourly[hour] = required_heat
+        if required_elec <= self.th_capacity:
+            self.heat_yearly += required_elec
+            self.heat_hourly[hour] = required_elec
             required_heat = 0
         # If hourly thermal demand is grreater than the capacity, meet as much
         # as possible.

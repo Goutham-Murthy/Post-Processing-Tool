@@ -41,3 +41,28 @@ def get_heat_profiles(location):
             building_ids.append(building)
     print "Building Heat Profile loaded"
     return heat_profiles, building_ids
+
+
+def get_el_profiles(location):
+    wb = xlrd.open_workbook(location+'/Heat profiles.xlsx')
+
+    el_profiles = []
+    building_ids = []
+    for sheet in wb.sheets():
+        number_of_rows = sheet.nrows
+        number_of_columns = sheet.ncols
+        for col in range(number_of_columns):
+            electrical_profile = []
+            building = str(sheet.cell(0, col).value)
+            for row in range(1, number_of_rows):
+                value = (sheet.cell(row, col).value)/1000
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+                finally:
+                    electrical_profile.append(value)
+            el_profiles.append(electrical_profile)
+            building_ids.append(building)
+    print "Building Electrical Profile loaded"
+    return el_profiles, building_ids

@@ -51,11 +51,7 @@ class CHP(annuity.Annuity):
         self.heat_hourly = [0]*8760
         self.heat_yearly = 0
         self.annuity = 0
-        self.deperiod = 15
-        self.effop = 10
-        self.fwins = 0.01
-        self.finst = 0.01
-        annuity.Annuity.__init__(self)
+        super(CHP, self).__init__(deperiod=15, effop=10, fwins=1, finst=1)
 
     def set_emissions(self):
         """
@@ -112,7 +108,7 @@ class CHP(annuity.Annuity):
 
         # Operation related costs include maintanance and repair
         # ORC = 30*effop
-        # Ain = CRC*(finst+fwins)
+        # Ain = CRC*(finst+fwins)/100
         # Anb = ORC*a*bb + Ain*a*bi
         if self.el_capacity > 0 and self.el_capacity < 10:
             ORC = ((3.2619 * self.el_capacity**0.1866) * self.heat_yearly /

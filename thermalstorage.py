@@ -47,11 +47,8 @@ class ThermalStorage(annuity.Annuity):
         self.heat_hourly = [0]*8760
         self.annuity = 0
         self.losses = 0
-        self.deperiod = 15
-        self.finst = 2
-        self.fwins = 1
-        self.effop = 0
-        annuity.Annuity.__init__(self)
+        super(ThermalStorage, self).__init__(deperiod=15, effop=0, fwins=1.0,
+                                         finst=2.0)
 
     def get_heat(self, required_heat, hour):
         """
@@ -69,9 +66,10 @@ class ThermalStorage(annuity.Annuity):
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
         if required_heat <= self.heat_stored[hour]:
-            self.heat_hourly[hour] -= required_heat
+            self.heat_hourly[hour] = required_heat
+            self.heat_stored[hour] -= required_heat
             required_heat = 0
-        # If hourly thermal demand is grreater than the capacity, meet as much
+        # If hourly thermal demand is greater than the capacity, meet as much
         # as possible.
         else:
             self.heat_hourly[hour] = self.heat_stored[hour]

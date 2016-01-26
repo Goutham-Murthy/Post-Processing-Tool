@@ -48,21 +48,14 @@ class Boiler(annuity.Annuity):
         # The deprecition period, finst, fwins and effop are different for
         # different capacitites according to VDI 2067.
         if self.th_capacity < 100:
-            self.deperiod = 18
-            self.finst = 1.5
-            self.fwins = 1.5
-            self.effop = 10
+            super(Boiler, self).__init__(deperiod=18, effop=10, fwins=1.5,
+                                         finst=1.5)
         elif self.th_capacity in range(100, 200):
-            self.deperiod = 20
-            self.finst = 1.0
-            self.fwins = 1.5
-            self.effop = 20
+            super(Boiler, self).__init__(deperiod=20, effop=20, fwins=1.5,
+                                         finst=1.0)
         else:
-            self.deperiod = 20
-            self.finst = 1.0
-            self.fwins = 2.0
-            self.effop = 20
-        annuity.Annuity.__init__(self)
+            super(Boiler, self).__init__(deperiod=20, effop=20, fwins=2.0,
+                                         finst=1.0)
 
     def get_heat(self, required_heat, hour):
         """

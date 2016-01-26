@@ -43,11 +43,8 @@ class ElectricHeater(annuity.Annuity):
         self.heat_yearly = 0
         self.annuity = 0
         self.emissions = 0
-        self.deperiod = 15
-        self.finst = 0.01
-        self.fwins = 0.01
-        self.effop = 5
-        annuity.Annuity.__init__(self)
+        super(ElectricHeater, self).__init__(deperiod=15, effop=5, fwins=1,
+                                             finst=1)
 
     def get_heat(self, required_heat, hour):
         """
@@ -117,7 +114,7 @@ class ElectricHeater(annuity.Annuity):
 
         # Operation related costs include maintanance and repair
         ORC = 30*self.effop
-        Ain = self.A0*(self.finst+self.fwins)
+        Ain = self.A0*(self.finst+self.fwins)/100
         self.Anb = ORC*self.a*self.bb + Ain*self.a*self.bi
 
         # Other costs
