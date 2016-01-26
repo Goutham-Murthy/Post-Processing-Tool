@@ -69,8 +69,7 @@ class ThermalStorage(annuity.Annuity):
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
         if required_heat <= self.heat_stored[hour]:
-            self.heat_hourly[hour] = required_heat
-            self.heat_stored[hour] -= required_heat
+            self.heat_hourly[hour] -= required_heat
             required_heat = 0
         # If hourly thermal demand is grreater than the capacity, meet as much
         # as possible.
