@@ -12,7 +12,7 @@ import thermalstorage
 import solarthermal
 import photovoltaics
 import electricalstorage
-import heatpump
+# import heatpump
 import electricalgrid
 
 
@@ -35,15 +35,16 @@ class PreProcessingTool:
         min_th_technologies : Minimum number of thermal technologies to be
                              considered.
         hourly_excels       : Hourly excels required? True or False.
-        Location            : Address of the folder where the ouput folder is
+        location            : Address of the folder where the output folder is
                              to be created.
     """
 
     def __init__(self, building_id,
                  thermal_profile,
                  electrical_profile,
-                 th_technologies=['CHP', 'ElHe', 'ThSt', 'B'],
-                 el_technologies=['CHP'],
+                 global_radiation,
+                 th_technologies=None,
+                 el_technologies=None,
                  max_el_technologies=1,
                  min_el_technologies=0,
                  max_th_technologies=3,
@@ -53,8 +54,11 @@ class PreProcessingTool:
         self.building_id = building_id
         self.thermal_profile = thermal_profile
         self.electrical_profile = electrical_profile
-        self.th_technologies = th_technologies
-        self.el_technologies = el_technologies
+        self.global_radiation = global_radiation
+        if th_technologies is None:
+            self.th_technologies = ['CHP', 'ElHe', 'ThSt', 'B']
+        if el_technologies is None:
+            self.el_technologies = ['CHP']
         self.max_el_technologies = max_el_technologies
         self.min_el_technologies = min_el_technologies
         self.max_th_technologies = max_th_technologies
@@ -103,8 +107,8 @@ class PreProcessingTool:
 
             # Change to the folder
             os.chdir(self.location+'/'+self.building_id)
-            # Make seperate directories depending on the number of technologies
-            # presentin the system
+            # Make separate directories depending on the number of technologies
+            # presenting the system
             if (self.max_el_technologies + self.max_th_technologies-1 >= number >= self.min_el_technologies +
                     self.min_th_technologies) and self.hourly_excels:
 
@@ -123,57 +127,44 @@ class PreProcessingTool:
 
                     # Proceed further is the number of technologies in the
                     # system are suitable
-                    if (self.max_el_technologies >= len(set(system) & set(self.el_technologies)) >=
-                            self.min_el_technologies and
+                    if (self.max_el_technologies >= len(set(system) &
+                        set(self.el_technologies)) >= self.min_el_technologies and
                             self.max_th_technologies >= len(set(system) &
-                                                                set(self.th_technologies)) >= self.min_th_technologies):
+                                                            set(self.th_technologies)) >= self.min_th_technologies):
 
                         # Create classes of the technologies
                         print '\n\n====================System-', system
 
                         # Create excel with the corresponding name
                         if self.hourly_excels:
-                            excel = xlsxwriter.Workbook(self.
-                                                        get_system_name(system)
-                                                        + '.xls')
-                            for th_order in \
-                                itertools.permutations(set(system) &
-                                                       set(self.th_technologies
-                                                           )):
-                                for el_order in \
-                                    itertools.permutations(set(system) &
-                                                           set(self.
-                                                               el_technologies)
-                                                           ):
-                                    excel.add_worksheet("{0}{1}".format(self.
-                                                                        get_priority(th_order), self.
-                                                                        get_priority(el_order)))
+                            excel = xlsxwriter.Workbook(self.get_system_name(system) + '.xls')
+                            for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
+                                for el_order in itertools.permutations(set(system) & set(self.el_technologies)):
+                                    excel.add_worksheet("{0}{1}".format(self.get_priority(th_order),
+                                                                        self.get_priority(el_order)))
                             excel.close()
 
                         # -----------------------------------------------------
                         # Generating different thermal priorities for each
                         # electrical priority and iterating through them
-                        for th_order in itertools.permutations(
-                                set(system) & set(self.th_technologies)):
-                            for el_order in itertools.permutations(
-                                    set(system) & set(self.el_technologies)):
+                        for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
+                            for el_order in itertools.permutations(set(system) & set(self.el_technologies)):
                                 self.initialise_technologies(system)
-                                demand_satisfied = self.perform_calculations(
-                                    th_order, el_order)
+                                demand_satisfied = self.perform_calculations(th_order, el_order)
                                 if demand_satisfied:
-                                    self.update_KPI(system, th_order, el_order)
+                                    self.update_kpi(system, th_order, el_order)
                                 if self.hourly_excels:
-                                    self.write_hourly_excel(
-                                        self.get_system_name(system)+'.xls',
-                                        self.get_priority(th_order),
-                                        th_order)
-        self.write_KPI_excel()
+                                    self.write_hourly_excel(self.get_system_name(system)+'.xls',
+                                                            self.get_priority(th_order),
+                                                            th_order,
+                                                            el_order)
+        self.write_kpi_excel()
         return
 
-    def update_KPI(self, system, th_order):
-        Total_annuity = 0
-        Total_emissions = 0
-        Total_pef = 0
+    def update_kpi(self, system, th_order, el_order):
+        total_annuity = 0
+        total_emissions = 0
+        total_pef = 0
         sc_percentage = 0
 
         if 'CHP' in system:
@@ -182,41 +173,41 @@ class PreProcessingTool:
             else:
                 self.OnOffCHP.set_annuity()
             self.OnOffCHP.set_emissions()
-            Total_annuity += self.OnOffCHP.annuity
-            Total_emissions += self.OnOffCHP.emissions
+            total_annuity += self.OnOffCHP.annuity
+            total_emissions += self.OnOffCHP.emissions
 
         if 'B' in system:
             self.B.set_annuity()
             self.B.set_emissions()
-            Total_annuity += self.B.annuity
-            Total_emissions += self.B.emissions
+            total_annuity += self.B.annuity
+            total_emissions += self.B.emissions
 
         if 'ElHe' in system:
             self.ElHe.set_annuity()
             self.ElHe.set_emissions()
-            Total_annuity += self.ElHe.annuity
-            Total_emissions += self.ElHe.emissions
+            total_annuity += self.ElHe.annuity
+            total_emissions += self.ElHe.emissions
 
         if 'ThSt' in system:
             self.ThSt.set_annuity()
-            Total_annuity += self.ThSt.annuity
+            total_annuity += self.ThSt.annuity
 
         if 'SolTh' in system:
             self.SolTh.set_annuity()
-            Total_annuity += self.SolTh.annuity
+            total_annuity += self.SolTh.annuity
 
         if 'PV' in system:
-            self.Pv.set_annuity()
+            self.PV.set_annuity()
             self.PV.set_emissions()
-            Total_annuity += self.PV.annuity
-            Total_emissions += self.PV.emissions
+            total_annuity += self.PV.annuity
+            total_emissions += self.PV.emissions
 
         self.KPI.append([self.get_system_name(system),
-                         self.get_thermal_priority(th_order),
-                         '',
-                         Total_annuity,
-                         Total_emissions,
-                         Total_pef,
+                         self.get_priority(th_order),
+                         self.get_priority(el_order),
+                         total_annuity,
+                         total_emissions,
+                         total_pef,
                          self.ThSt.losses if 'ThSt' in system else 0,
                          self.OnOffCHP.th_capacity if 'CHP' in system else 0,
                          self.OnOffCHP.heat_yearly if 'CHP' in system else 0,
@@ -226,12 +217,12 @@ class PreProcessingTool:
                          self.B.heat_yearly if 'B' in system else 0,
                          self.ThSt.th_capacity if 'ThSt' in system else 0,
                          self.ThSt.heat_stored[8760] if 'ThSt' in system else 0,
-                         self.SolTh.th_capacity if 'SolTh' in system else 0,
+                         self.SolTh.area if 'SolTh' in system else 0,
                          self.SolTh.heat_yearly if 'SolTh' in system else 0,
                          self.ElHe.th_capacity if 'ElHe' in system else 0,
                          self.ElHe.heat_yearly if 'ElHe' in system else 0,
-                         self.PV.th_capacity if 'PV' in system else 0,
-                         self.PV.heat_yearly if 'PV' in system else 0,
+                         self.PV.area if 'PV' in system else 0,
+                         self.PV.electricity_yearly if 'PV' in system else 0,
                          self.OnOffCHP.annuity if 'CHP' in system else 0,
                          self.B.annuity if 'B' in system else 0,
                          self.ThSt.annuity if 'ThSt' in system else 0,
@@ -240,7 +231,8 @@ class PreProcessingTool:
                          self.PV.annuity if 'PV' in system else 0,
                          sc_percentage])
 
-    def get_maxr(self, thermal_profile):
+    @staticmethod
+    def get_maxr(thermal_profile):
         # Sort thermal demand in decreasing order for the load distribution
         # curve
         thermal_profile = sorted(thermal_profile, reverse=True)
@@ -248,6 +240,7 @@ class PreProcessingTool:
         # Finding the maximum rectangle
         q_yearly = 0
         maxr = 0
+        hours = 0
         for k in range(0, 8760):
             q_yearly += thermal_profile[k]
             if k*thermal_profile[k] > maxr:
@@ -295,17 +288,17 @@ class PreProcessingTool:
         # Solar Thermal
         # If Solar thermal is present, dimension according to roof area
         if 'SolTh' in system and 'PV' not in system:
-            self.SolTh = solarthermal.SolarThermal('Model', 10.0)
+            self.SolTh = solarthermal.SolarThermal('Model', 10.0, self.global_radiation)
         if 'SolTh' in system and 'PV' in system:
-            self.SolTh = solarthermal.SolarThermal('Model', 5.0)
+            self.SolTh = solarthermal.SolarThermal('Model', 5.0, self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Photovoltaics
         # If PV is present, dimension according to roof area
         if 'PV' in system and 'SolTh' not in system:
-            self.PV = photovoltaics.Photovoltaics('Model', 10.0)
+            self.PV = photovoltaics.Photovoltaics('PV model', 10.0, self.global_radiation)
         if 'PV' in system and 'SolTh' in system:
-            self.PV = photovoltaics.Photovoltaics('Model', 5.0)
+            self.PV = photovoltaics.Photovoltaics('PV model', 5.0, self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Electrical Storage
@@ -345,13 +338,13 @@ class PreProcessingTool:
                     q_hourly = self.ElHe.get_heat(q_hourly, i)
                 if technology is 'ThSt' and q_hourly > 0:
                     q_hourly = self.ThSt.get_heat(q_hourly, i)
-                if technology is 'HP' and q_hourly > 0:
-                    q_hourly = self.HP.get_heat(q_hourly, i)
+                # if technology is 'HP' and q_hourly > 0:
+                #   q_hourly = self.HP.get_heat(q_hourly, i)
                 if technology is 'SolTh' and q_hourly > 0:
                     q_hourly = self.SolTh.get_heat(q_hourly, i)
                 try:
                     assert q_hourly == 0
-                except:
+                except AssertionError:
                     return False
 
             # Meeting the electrical demand
@@ -364,9 +357,9 @@ class PreProcessingTool:
                     p_hourly = self.ElSt.get_electricity(p_hourly, i)
 
             # If electrical demand is not met, take electricity from the grid.
-            if technology is 'ElGrid' and p_hourly > 0:
-                    p_hourly = self.OnOffCHP.get_elec(p_hourly, i)
-            return True
+            if p_hourly > 0:
+                self.ElGrid.get_electricity(p_hourly, i)
+            return
 
     def write_hourly_excel(self, workbook_name, worksheet_name, th_order,
                            el_order):
@@ -392,8 +385,8 @@ class PreProcessingTool:
                 worksheet.write(0, count, 'Heat stored in Thermal Storage')
                 count += 1
                 worksheet.write(0, count, 'Heat provided by thermal Storage')
-            elif technology is 'HP':
-                worksheet.write(0, count, 'Heat Pump Production')
+            # elif technology is 'HP':
+            #    worksheet.write(0, count, 'Heat Pump Production')
             elif technology is 'SolTh':
                 worksheet.write(0, count, 'Solar Thermal Production')
             count += 1
@@ -412,9 +405,9 @@ class PreProcessingTool:
                 elif technology is 'ThSt':
                     worksheet.write(i+1, count, self.ThSt.heat_stored[i])
                     count += 1
-                    worksheet.write(i+1, count, self.ThSt.heat_hourly[i])
-                elif technology is 'HP':
-                    worksheet.write(i+1, count, self.HP.heat_hourly[i])
+                    worksheet.write(i+1, count, self.ThSt.heat_given[i])
+                # elif technology is 'HP':
+                #    worksheet.write(i+1, count, self.HP.heat_hourly[i])
                 elif technology is 'SolTh':
                     worksheet.write(i+1, count, self.SolTh.heat_hourly[i])
                 count += 1
@@ -428,8 +421,8 @@ class PreProcessingTool:
             elif technology is 'ElHe':
                 worksheet.write(0, count, 'Electrical Resistance Heater \
                                            Consumption')
-            elif technology is 'HP':
-                worksheet.write(0, count, 'HP electricity Consumption')
+            # elif technology is 'HP':
+            #    worksheet.write(0, count, 'HP electricity Consumption')
             elif technology is 'ElSt':
                 worksheet.write(0, count, 'Electricity stored in electrical \
                                          storage')
@@ -446,17 +439,17 @@ class PreProcessingTool:
             count = 2 + len(th_order)
             for technology in el_order:
                 if technology is 'CHP':
-                    worksheet.write(i+1, count, self.CHP.electricity_hourly[i])
+                    worksheet.write(i+1, count, self.OnOffCHP.electricity_hourly[i])
                 elif technology is 'PV':
                     worksheet.write(i+1, count, self.PV.electricity_hourly[i])
                 elif technology is 'ElHe':
                     worksheet.write(i+1, count, self.ElHe.electricity_hourly[i])
-                elif technology is 'HP':
-                    worksheet.write(i+1, count, self.HP.electricity_hourly[i])
+                # elif technology is 'HP':
+                #    worksheet.write(i+1, count, self.HP.electricity_hourly[i])
                 elif technology is 'ElSt':
-                    worksheet.write(i+1, count, self.ElSt.electricity_hourly[i])
+                    worksheet.write(i+1, count, self.ElSt.electricity_stored[i])
                     count += 1
-                    worksheet.write(i+1, count, self.ElSt.electricity_hourly[i])
+                    worksheet.write(i+1, count, self.ElSt.electricity_given[i])
                 elif technology is 'ElGrid':
                     worksheet.write(i+1, count, self.ElGrid.electricity_hourly[i])
             count += 1
@@ -610,7 +603,7 @@ class PreProcessingTool:
 #        worksheet.write(0, 17, "Boiler Capital related Annuity(Euros)")
 #        worksheet.write(0, 18, "Boiler demand related Annuity(Euros)")
 #        worksheet.write(0, 19, "Boiler operation related Annuity(Euros)")
-#        worksheet.write(0, 20, "Total Boielr Annuity(Euros)")
+#        worksheet.write(0, 20, "Total Boiler Annuity(Euros)")
 #        row = 1
 #        for item in self.EconomicFactors:
 #            for column in range(0, 21):

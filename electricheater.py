@@ -18,12 +18,6 @@ class ElectricHeater(annuity.Annuity):
         annuity (float)         : Annuity of the Electric Heater [Euros].
         emissions (float)       : CO2 emissions of the electric heater unit
                                  [kg of CO2].
-        deperiod(float)         : Depreciation period [years].
-        finst(float)            : Effort for annual repairs as percentage of
-                                 initial investment [%].
-        fwins(float)            : Effort for annual maintenance and inspection
-                                 as percentage of total investment [%].
-        effop(float)            : Effort for operation [hours/annum].
 
     Extends:
         Annuity class
@@ -49,7 +43,7 @@ class ElectricHeater(annuity.Annuity):
     def get_heat(self, required_heat, hour):
         """
         Given the required heat, function calculates the hourly heat met by the
-        electric heater and returns the value for unsatified thermal demand.
+        electric heater and returns the value for unsatisfied thermal demand.
 
         Args:
             required_heat (float)   : Hourly heat demand of the building [kWh].
@@ -66,7 +60,7 @@ class ElectricHeater(annuity.Annuity):
             self.heat_hourly[hour] = required_heat
             required_heat = 0
             return required_heat
-        # If hourly thermal demand is grreater than the capacity, meet as much
+        # If hourly thermal demand is greater than the capacity, meet as much
         # as possible.
         else:
             self.heat_yearly += self.th_capacity
@@ -84,7 +78,7 @@ class ElectricHeater(annuity.Annuity):
         Returns:
             None.
         """
-        # CO2 emissions for prodution of grid electricity, used by electric
+        # CO2 emissions for production of grid electricity, used by electric
         # heaters are 595 g/kWh for Germany.
         # [Petra Icha. Entwicklung der spezifischen Kohlendioxid-Emissionen des
         # deutschen Strommix in den Jahren 1990 bis 2013. Umweltbundesamt,
@@ -109,13 +103,13 @@ class ElectricHeater(annuity.Annuity):
 
         # Demand related costs include price of fuel to generate the required
         # heat i.e. electricity price
-        DRC = self.heat_yearly*self.electricity_price
-        self.Anv = DRC*self.a*self.bv
+        drc = self.heat_yearly*self.electricity_price
+        self.Anv = drc*self.a*self.bv
 
-        # Operation related costs include maintanance and repair
-        ORC = 30*self.effop
-        Ain = self.A0*(self.finst+self.fwins)/100
-        self.Anb = ORC*self.a*self.bb + Ain*self.a*self.bi
+        # Operation related costs include maintenance and repair
+        orc = 30*self.effop
+        ain = self.A0*(self.finst+self.fwins)/100
+        self.Anb = orc*self.a*self.bb + ain*self.a*self.bi
 
         # Other costs
         self.Ans = 0

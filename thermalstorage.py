@@ -4,11 +4,11 @@ import annuity
 
 class ThermalStorage(annuity.Annuity):
     """
-    Class representing Thermal Storage technologgy.
+    Class representing Thermal Storage technology.
 
     Attributes:
         model (string)          : Model of the thermal storage unit.
-        th_capacity (float)     : Thermal capacity of the stortage unit [kWh].
+        th_capacity (float)     : Thermal capacity of the storage unit [kWh].
         loss_percent (float)    : Percentage of heat lost in the thermal
                                  storage unit over each hour [%].
         heat_stored (float)     : Heat present in the thermal storage unit
@@ -45,7 +45,7 @@ class ThermalStorage(annuity.Annuity):
     def get_heat(self, required_heat, hour):
         """
         Given the required heat, function calculates the hourly heat met by
-        the boiler and returns the value for unsatified thermal demand.
+        the boiler and returns the value for unsatisfied thermal demand.
 
         Args:
             required_heat (float)   : Hourly heat demand of the building [kWh].

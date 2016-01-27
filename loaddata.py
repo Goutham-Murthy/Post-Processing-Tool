@@ -30,7 +30,7 @@ def get_heat_profiles(location):
             thermal_profile = []
             building = str(sheet.cell(0, col).value)
             for row in range(1, number_of_rows):
-                value = (sheet.cell(row, col).value)/1000
+                value = sheet.cell(row, col).value / 1000
                 try:
                     value = float(value)
                 except ValueError:
@@ -55,7 +55,7 @@ def get_el_profiles(location):
             electrical_profile = []
             building = str(sheet.cell(0, col).value)
             for row in range(1, number_of_rows):
-                value = (sheet.cell(row, col).value)/1000
+                value = sheet.cell(row, col).value / 1000
                 try:
                     value = float(value)
                 except ValueError:

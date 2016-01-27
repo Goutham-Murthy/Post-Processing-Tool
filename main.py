@@ -12,7 +12,8 @@ for i in range(0, len(building_ids)):
     electrical_profile = el_profiles[i]
     building_number = preprocessingtool.PreProcessingTool(building_id=building_id,
                                                           thermal_profile=thermal_profile,
-                                                          electrical_profile=electrical_profile)
+                                                          electrical_profile=electrical_profile,
+                                                          global_radiation=global_radiation)
     building_number.generate_cases()
 
 os.chdir("D:/aja-gmu/Simulation_Files")

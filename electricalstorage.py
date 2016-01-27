@@ -5,7 +5,7 @@ import annuity
 class ElectricalStorage(annuity.Annuity):
     def __init__(self, model, storage_capacity, loss_percent):
         """
-        Class for electrical storage technology. Havy duty deep-cycle batteries considered.
+        Class for electrical storage technology. Heavy duty deep-cycle batteries considered.
 
         :param model: Model of the electrical storage.
         :param storage_capacity: Storage capacity of the storage unit in kWh.
