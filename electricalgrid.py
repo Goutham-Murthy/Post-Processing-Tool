@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 import annuity
 
 
@@ -7,9 +6,9 @@ class ElectricalGrid(annuity.Annuity):
     """Class representing the electrical grid.
 
     Attributes:
-        el_yearly (float)   : Electricity provided by the electric grid unit over the
+        electricity_yearly (float)   : Electricity provided by the electric grid unit over the
                                  year[kWh].
-        el_hourly (float)   : Hourly values of the heat demand met by
+        electricity_hourly (float)   : Hourly values of the heat demand met by
                                  the electric grid unit [kWh].
         annuity (float)     : Annuity contribution of the grid to the annuity of the system [Euros].
         emissions (float)   : Emission contribution of the imported electricity to the grid [kg of CO2]

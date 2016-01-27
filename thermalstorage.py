@@ -13,18 +13,11 @@ class ThermalStorage(annuity.Annuity):
                                  storage unit over each hour [%].
         heat_stored (float)     : Heat present in the thermal storage unit
                                  at the beginning of hour [kWh].
-        heat_hourly (float)     : Hourly values of the heat provided by the
+        heat_given(float)     : Hourly values of the heat provided by the
                                  thermal storage unit [kWh].
         annuity (float)         : Annuity of the thermal storage unit [Euros].
         losses (float)          : Total heat losses from the thermal storage
                                  unit [kWh]
-        deperiod(float)         : Depreciation period [years].
-        finst(float)            : Effort for annual repairs as percentage of
-                                 initial investment [%].
-        fwins(float)            : Effort for annual maintenance and inspection
-                                 as percentage of total investment [%].
-        effop(float)            : Effort for operation [hours/annum].
-
     Extends:
         Annuity class
     """
@@ -44,11 +37,10 @@ class ThermalStorage(annuity.Annuity):
         self.loss_percent = loss_percent
         # Initialising other variables to zero.
         self.heat_stored = [0]*8761
-        self.heat_hourly = [0]*8760
+        self.heat_given = [0]*8760
         self.annuity = 0
         self.losses = 0
-        super(ThermalStorage, self).__init__(deperiod=15, effop=0, fwins=1.0,
-                                         finst=2.0)
+        super(ThermalStorage, self).__init__(deperiod=15, effop=0, fwins=1.0, finst=2.0)
 
     def get_heat(self, required_heat, hour):
         """
@@ -66,13 +58,13 @@ class ThermalStorage(annuity.Annuity):
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
         if required_heat <= self.heat_stored[hour]:
-            self.heat_hourly[hour] = required_heat
+            self.heat_given[hour] = required_heat
             self.heat_stored[hour] -= required_heat
             required_heat = 0
         # If hourly thermal demand is greater than the capacity, meet as much
         # as possible.
         else:
-            self.heat_hourly[hour] = self.heat_stored[hour]
+            self.heat_given[hour] = self.heat_stored[hour]
             required_heat -= self.heat_stored[hour]
             self.heat_stored[hour] = 0
         return required_heat
@@ -87,7 +79,7 @@ class ThermalStorage(annuity.Annuity):
         Returns:
             None
         """
-        th_capacity_l = self.get_ThSt_Cap_l()
+        th_capacity_l = self.get_cap_l
 
         if th_capacity_l > 1000:
             bonus = 250*th_capacity_l/1000
@@ -99,13 +91,13 @@ class ThermalStorage(annuity.Annuity):
         self.set_Ank()
 
         # Demand related costs include price of fuel to produce required heat
-        DRC = 0
-        self.Anv = DRC*self.a*self.bv
+        drc = 0
+        self.Anv = drc*self.a*self.bv
 
-        # Operation related costs include maintanance and repair
-        ORC = 30*self.effop
-        Ain = self.A0*(self.finst + self.fwins)/100   # finst and fwins in %
-        self.Anb = ORC*self.a*self.bb + Ain*self.a*self.bi
+        # Operation related costs include maintenance and repair
+        orc = 30*self.effop
+        ain = self.A0*(self.finst + self.fwins)/100   # finst and fwins in %
+        self.Anb = orc*self.a*self.bb + ain*self.a*self.bi
 
         # Other costs
         self.Ans = 0
@@ -116,13 +108,14 @@ class ThermalStorage(annuity.Annuity):
         self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)
         return
 
-    def get_ThSt_Cap_l(self):
+    @property
+    def get_cap_l(self):
         """
         Given the thermal capacity of the storage unit in kWh, return the
         capacity in liters.
 
         Args:
-            None
+            none.
         Returns:
             th_capacity_l   : Thermal capacity of storage unit in liters.
         """
@@ -140,11 +133,11 @@ class ThermalStorage(annuity.Annuity):
         Returns:
             None.
         """
-        self.heat_stored[hour] = heat + self.heat_stored[hour]
+        self.heat_stored[hour] += heat
         return
 
-    def get_ThSt_avaiability(self, hour):
-        return (self.th_capacity - self.heat_stored[hour])
+    def get_availability(self, hour):
+        return self.th_capacity - self.heat_stored[hour]
 
     def apply_losses(self, hour):
         """
@@ -158,5 +151,5 @@ class ThermalStorage(annuity.Annuity):
         """
         # Carry over heat to next hour
         self.heat_stored[hour] += (self.heat_stored[hour-1] *
-                                    (100-self.loss_percent)/100)
+                                   (100-self.loss_percent)/100)
         self.losses += ((self.heat_stored[hour-1]*self.loss_percent)/100)

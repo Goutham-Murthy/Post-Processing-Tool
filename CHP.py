@@ -189,10 +189,10 @@ class OnOffCHP(CHP):
                                          CHP unit [kWh].
         """
         if ThSt is not None:
-            if (required_heat < self.th_capacity):
+            if required_heat < self.th_capacity:
                 # Excess heat can be stored in the storage unit.
                 # Check for availability of thermal storage unit.
-                if ((self.th_capacity - required_heat) <= ThSt.get_ThSt_avaiability(hour)):
+                if (self.th_capacity - required_heat) <= ThSt.get_ThSt_avaiability(hour):
                     ThSt.store_heat((self.th_capacity - required_heat),
                                     (hour))
                     required_heat = 0
@@ -206,7 +206,7 @@ class OnOffCHP(CHP):
             # If thermal demand is greater than capacity meet it as much as
             # possible.
         else:
-            if (required_heat < self.th_capacity):
+            if required_heat < self.th_capacity:
                 pass
             else:
                 self.heat_yearly += self.th_capacity

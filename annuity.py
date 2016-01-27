@@ -10,6 +10,10 @@ import abc
 class Annuity(object):
     def __init__(self, deperiod, effop, fwins, finst, obperiod=10, q=1.07,
                  r=1.03, gas_price=0.067, electricity_price=0.26):
+        """
+
+        :rtype: object: Annuity class containing annuity related parameters and variables
+        """
         self.deperiod = deperiod
         self.effop = effop
         self.fwins = fwins
