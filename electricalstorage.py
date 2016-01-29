@@ -20,6 +20,7 @@ class ElectricalStorage(annuity.Annuity):
         self.electricity_given = [0]*8760
         self.annuity = 0
         self.losses = 0
+        self.max_el = 2
         super(ElectricalStorage, self).__init__(deperiod=5, effop=0, fwins=1.0, finst=0.5)
 
     def get_electricity(self, required_electricity, hour):

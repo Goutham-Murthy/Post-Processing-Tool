@@ -33,9 +33,10 @@ class Photovoltaics(annuity.Annuity):
         self.electricity_yearly = 0
         self.annuity = 0
         self.emissions = 0
+        self.electricity_hourly_exported = [0]*8760
         super(Photovoltaics, self).__init__(deperiod=25, effop=5, fwins=1, finst=0.5)
 
-    def get_electricity(self, required_electricity, hour):
+    def get_electricity(self, required_electricity, hour, ElSt=None):
         """
         Given the required electricity, function calculates the hourly heat met
         by the PV and returns the value for electricity thermal demand.
@@ -49,19 +50,31 @@ class Photovoltaics(annuity.Annuity):
             required_electricity (float)   : Hourly electrical demand not met by the
                                             PV [kWh].
         """
-        # If thermal capacity is more than hourly thermal demand, meet the
+        # If electrical production is more than electrical thermal demand, meet the
         # demand entirely.
-        produced_electricity = .15*0.8*self.area*self.global_radiation[hour]
-        if required_electricity <= produced_electricity:
-            self.electricity_yearly += required_electricity
-            self.electricity_hourly[hour] = required_electricity
-            required_electricity = 0
-        # If hourly thermal demand is greater than the capacity, meet as much
-        # as possible.
+        self.electricity_hourly[hour] = .15*0.8*self.area*self.global_radiation[hour]/1000  # In KWh
+        self.electricity_yearly += self.electricity_hourly[hour]
+        if ElSt is not None:
+            if required_electricity < self.electricity_hourly[hour]:
+                # Excess electricity can be stored in the storage unit.
+                # Check for availability of electrical storage unit.
+                possible_electricity_storage = min((self.electricity_hourly[hour] - required_electricity), ElSt.max_el,
+                                                   ElSt.get_availability(hour))
+                ElSt.store_electricity(possible_electricity_storage, hour)
+                required_electricity = 0
+                self.electricity_hourly_exported[hour] = self.electricity_hourly[hour] - possible_electricity_storage
+            else:
+                required_electricity -= self.electricity_hourly[hour]
         else:
-            self.electricity_yearly += produced_electricity
-            self.electricity_hourly[hour] = produced_electricity
-            required_electricity -= produced_electricity
+            # If electrical production is more than electrical thermal demand, meet the
+            # demand entirely and export the rest
+            if required_electricity < self.electricity_hourly[hour]:
+                self.electricity_hourly_exported[hour] = self.electricity_hourly[hour] - required_electricity
+                required_electricity = 0
+            # If hourly electrical demand is greater than the capacity, meet as much
+            # as possible. Nothing is exported to the grid
+            else:
+                required_electricity -= self.electricity_hourly[hour]
         return required_electricity
 
     def set_emissions(self):

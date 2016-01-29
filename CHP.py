@@ -22,8 +22,7 @@ class CHP(annuity.Annuity):
         Annuity class
     """
 
-    def __init__(self, model, th_capacity, el_capacity,
-                 th_efficiency, el_efficiency):
+    def __init__(self, model, th_capacity, el_capacity, th_efficiency, el_efficiency):
         """Constructor method for class CHP.
 
         Args:
@@ -44,6 +43,9 @@ class CHP(annuity.Annuity):
         self.bonus = 0
         self.heat_hourly = [0]*8760
         self.heat_yearly = 0
+        self.electricity_yearly = 0
+        self. electricity_hourly = [0]*8760
+        self.electricity_hourly_exported = [0]*8760
         self.annuity = 0
         super(CHP, self).__init__(deperiod=15, effop=10, fwins=1, finst=1)
 
@@ -176,7 +178,7 @@ class OnOffCHP(CHP):
             if required_heat < self.th_capacity:
                 # Excess heat can be stored in the storage unit.
                 # Check for availability of thermal storage unit.
-                if (self.th_capacity - required_heat) <= ThSt.get_ThSt_avaiability(hour):
+                if (self.th_capacity - required_heat) <= ThSt.get_availability(hour):
                     ThSt.store_heat((self.th_capacity - required_heat), hour)
                     required_heat = 0
                     self.heat_yearly += self.th_capacity
@@ -190,12 +192,50 @@ class OnOffCHP(CHP):
             # possible.
         else:
             if required_heat < self.th_capacity:
-                pass
+                self.heat_hourly[hour] = 0
             else:
                 self.heat_yearly += self.th_capacity
                 self.heat_hourly[hour] = self.th_capacity
                 required_heat -= self.th_capacity
         return required_heat
 
+    def get_electricity(self, required_electricity, hour, ElSt=None):
+        """
+        Given the required electricity, function calculates the hourly heat met
+        by the PV and returns the value for electricity thermal demand.
+
+        Args:
+            required_electricity (float)    : Hourly electrical demand of the building
+                                            [kWh].
+            hour (int)                      : Hour of the year.
+
+        Returns:
+            required_electricity (float)   : Hourly electrical demand not met by the
+                                            PV [kWh].
+        """
+        self.electricity_hourly[hour] = self.el_efficiency * self.heat_hourly[hour] / self.th_efficiency
+        self.electricity_yearly += self.electricity_hourly[hour]
+        if ElSt is not None:
+            if required_electricity < self.electricity_hourly[hour]:
+                # Excess electricity can be stored in the storage unit.
+                # Check for availability of electrical storage unit.
+                possible_electricity_storage = min((self.electricity_hourly[hour] - required_electricity), ElSt.max_el,
+                                                   ElSt.get_availability(hour))
+                ElSt.store_electricity(possible_electricity_storage, hour)
+                required_electricity = 0
+                self.electricity_hourly_exported[hour] = self.electricity_hourly[hour] - possible_electricity_storage
+            else:
+                required_electricity -= self.electricity_hourly[hour]
+        else:
+            # If electrical production is more than electrical thermal demand, meet the
+            # demand entirely and export the rest
+            if required_electricity < self.electricity_hourly[hour]:
+                self.electricity_hourly_exported[hour] = self.electricity_hourly[hour] - required_electricity
+                required_electricity = 0
+            # If hourly electrical demand is greater than the capacity, meet as much
+            # as possible. Nothing is exported to the grid
+            else:
+                required_electricity -= self.electricity_hourly[hour]
+        return required_electricity
 # CHP = OnOffCHP('YahooCHP', 2.7, 1, 0.6, 0.3)
 # CHP.get_heat(3, 31)
