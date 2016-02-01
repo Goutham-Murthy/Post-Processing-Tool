@@ -22,21 +22,17 @@ class CHP(annuity.Annuity):
         Annuity class
     """
 
-    def __init__(self, model, th_capacity, el_capacity, th_efficiency, el_efficiency):
+    def __init__(self, model):
         """Constructor method for class CHP.
 
         Args:
             model (string)          : Model of the CHP unit.
-            th_capacity (float)     : Thermal capacity of the CHP [kW].
-            el_capacity (float)     : Electrical capacity of the CHP [kW].
-            th_efficiency (float)   : Thermal efficiency of the CHP[decimal<1].
-            el_efficiency (float)   : Electrical efficiency of the CHP unit.
         """
-        self.model = model
-        self.th_capacity = th_capacity
-        self.el_capacity = el_capacity
-        self.th_efficiency = th_efficiency
-        self.el_efficiency = el_efficiency
+        self.model_name = model[0]
+        self.th_capacity = model[1]
+        self.th_efficiency = model[2]
+        self.el_efficiency = model[3]
+        self.el_capacity = self.th_capacity/self.th_efficiency*self.el_efficiency
         # Initialising other variables to zero.
         self.emissions = 0
         self.annuity = 0

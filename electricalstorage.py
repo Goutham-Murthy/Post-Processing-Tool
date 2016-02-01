@@ -12,7 +12,7 @@ class ElectricalStorage(annuity.Annuity):
         :param loss_percent: Loss percentage of the storage capacity.
         :return: none
         """
-        self.model = model
+        self.model_name = model
         self.storage_capacity = storage_capacity
         self.loss_percent = loss_percent
         # Initialising other variables to zero.

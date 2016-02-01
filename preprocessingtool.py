@@ -14,6 +14,7 @@ import photovoltaics
 import electricalstorage
 # import heatpump
 import electricalgrid
+import database
 
 
 class PreProcessingTool:
@@ -252,49 +253,49 @@ class PreProcessingTool:
         # device is present, CHP is sized according to maximum rectangle
         # method. Otherwise it is sized according to peak thermal load.
         if 'CHP' in system and 'ElHe' not in system and 'B'not in system:
-            self.OnOffCHP = CHP.OnOffCHP('YahooCHP', self.peak_th_power,
-                                         0.3*self.peak_th_power, 0.6, 0.3)
+            self.OnOffCHP = CHP.OnOffCHP(database.get_chp_capacity(self.peak_th_power))
         if 'CHP' in system and ('ElHe' in system or 'B' in system):
-            self.OnOffCHP = CHP.OnOffCHP('YahooCHP', self.maxr_th_power,
-                                         0.3*self.maxr_th_power, 0.6, 0.3)
+            self.OnOffCHP = CHP.OnOffCHP(database.get_chp_capacity(self.maxr_th_power))
 
         # ---------------------------------------------------------------------
         # Boiler
         # If boiler is present, dimension it to peak thermal demand
         if 'B' in system:
-            self.B = boiler.Boiler('YahooB', self.peak_th_power, 0.98)
+            self.B = boiler.Boiler(database.get_b_capacity(self.peak_th_power))
 
         # ---------------------------------------------------------------------
         # Electric Resistance Heater
         # If electric heater is present, dimension it to peak thermal demand
         if 'ElHe' in system:
-            self.ElHe = electricheater.ElectricHeater('Model',
-                                                      self.peak_th_power)
+            self.ElHe = electricheater.ElectricHeater('Electric Heater Model',
+                                                      database.get_elhe_capacity(self.peak_th_power))
 
         # ---------------------------------------------------------------------
         # Thermal Storage
         # If thermal storage is present, dimension it according to CHP
         # capacity.
         if 'ThSt' in system:
-            self.ThSt = thermalstorage.ThermalStorage('Model',
-                                                      3*self.OnOffCHP.
-                                                      th_capacity, 1)
+            self.ThSt = thermalstorage.ThermalStorage(database.get_thst_capacity(3*self.OnOffCHP.th_capacity))
 
         # ---------------------------------------------------------------------
         # Solar Thermal
         # If Solar thermal is present, dimension according to roof area
         if 'SolTh' in system and 'PV' not in system:
-            self.SolTh = solarthermal.SolarThermal('Model', 10.0, self.global_radiation)
+            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(10),
+                                                   self.global_radiation)
         if 'SolTh' in system and 'PV' in system:
-            self.SolTh = solarthermal.SolarThermal('Model', 5.0, self.global_radiation)
+            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(5),
+                                                   self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Photovoltaics
         # If PV is present, dimension according to roof area
         if 'PV' in system and 'SolTh' not in system:
-            self.PV = photovoltaics.Photovoltaics('PV model', 10.0, self.global_radiation)
+            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(10),
+                                                  self.global_radiation)
         if 'PV' in system and 'SolTh' in system:
-            self.PV = photovoltaics.Photovoltaics('PV model', 5.0, self.global_radiation)
+            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(5),
+                                                  self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Electrical Storage

@@ -22,19 +22,15 @@ class ThermalStorage(annuity.Annuity):
         Annuity class
     """
 
-    def __init__(self, model, th_capacity, loss_percent):
+    def __init__(self, model):
         """Constructor method for class thermal storage.
 
         Args:
             model (string)          : Model of the thermal storage unit.
-            th_capacity (float)     : Thermal capacity of the storage unit
-                                     [kWh].
-            loss_percent (float)    : Percentage of heat lost in the thermal
-                                     storage unit over each hour [decimal<1].
         """
-        self.model = model
-        self.th_capacity = th_capacity
-        self.loss_percent = loss_percent
+        self.model_name = model[0]
+        self.th_capacity = model[1]
+        self.loss_percent = model[2]
         # Initialising other variables to zero.
         self.heat_stored = [0]*8761
         self.heat_given = [0]*8760

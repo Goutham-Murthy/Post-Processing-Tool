@@ -22,7 +22,7 @@ class Boiler(annuity.Annuity):
         Annuity class
     """
 
-    def __init__(self, model, th_capacity, efficiency):
+    def __init__(self, model):
         """Constructor method for class Boiler.
 
         Args:
@@ -30,9 +30,9 @@ class Boiler(annuity.Annuity):
             th_capacity (float)     : Thermal capacity of the boiler [kW].
             efficiency (float)      : Efficiency of the boiler [decimal<1].
         """
-        self.model = model
-        self.th_capacity = th_capacity
-        self.efficiency = efficiency
+        self.model_name = model[0]
+        self.th_capacity = model[1]
+        self.efficiency = model[2]
         # Initialising other variables to zero.
         self.heat_hourly = [0]*8760
         self.heat_yearly = 0
