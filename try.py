@@ -1,14 +1,17 @@
+from PySide import QtGui
 import sys
-from PyQt4 import QtGui, uic
+import ahoi
 
 
-class MyWindow(QtGui.QMainWindow):
-    def __init__(self):
-        super(MyWindow, self).__init__()
-        uic.loadUi('GUI.ui', self)
-        self.show()
+class ControlMainWindow(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(ControlMainWindow, self).__init__(parent)
+        self.ui = ahoi.Ui_MainWindow()
+        self.ui.setupUi(self)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    window = MyWindow()
+    mySW = ControlMainWindow()
+    mySW.show()
     sys.exit(app.exec_())

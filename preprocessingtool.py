@@ -57,7 +57,9 @@ class PreProcessingTool:
         self.electrical_profile = electrical_profile
         self.global_radiation = global_radiation
         if th_technologies is None:
-            self.th_technologies = ['CHP', 'ElHe', 'ThSt', 'B']
+            self.th_technologies = ['CHP', 'SolTh', 'ThSt', 'B']
+        else:
+            self.th_technologies = th_technologies
         if el_technologies is None:
             self.el_technologies = ['CHP', 'PV', 'ElSt']
         self.max_el_technologies = max_el_technologies

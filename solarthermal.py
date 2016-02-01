@@ -17,7 +17,7 @@ class SolarThermal(annuity.Annuity):
         self.global_radiation = global_radiation
         # Initialising other variables to zero.
         self.heat_hourly = [0]*8761
-        self.heat_yearly = [0]*8760
+        self.heat_yearly = 0
         self.annuity = 0
         self.emissions = 0
         super(SolarThermal, self).__init__(deperiod=20, effop=5, fwins=1.0, finst=0.5)
@@ -65,6 +65,7 @@ class SolarThermal(annuity.Annuity):
                 self.heat_yearly += self.heat_hourly[hour]
                 required_heat = 0
             else:
+                print self.heat_yearly, self.heat_hourly[hour], hour
                 self.heat_yearly += self.heat_hourly[hour]
                 required_heat -= self.heat_hourly[hour]
         return required_heat
