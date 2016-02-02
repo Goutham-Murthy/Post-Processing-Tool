@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>rtrtjrtj</class>
+ <widget class="QMainWindow" name="rtrtjrtj">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>326</height>
+    <width>555</width>
+    <height>389</height>
    </rect>
   </property>
   <property name="acceptDrops">
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string extracomment="Pick an output folder">MainWindow</string>
+   <string extracomment="Pick an output folder">Welcome to the SGT UI</string>
   </property>
   <property name="documentMode">
    <bool>false</bool>
@@ -31,7 +31,7 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label1">
        <property name="text">
         <string>Choose technologies that can be present in the system:</string>
        </property>
@@ -44,14 +44,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="CHP">
+      <widget class="QCheckBox" name="CHP1">
        <property name="text">
         <string>CHP</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="boiler">
+      <widget class="QCheckBox" name="boiler1">
        <property name="text">
         <string>Boiler</string>
        </property>
@@ -72,21 +72,21 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="electricheater">
+      <widget class="QCheckBox" name="electricheater1">
        <property name="text">
         <string>Electric Heater</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="photovoltaics">
+      <widget class="QCheckBox" name="photovoltaics1">
        <property name="text">
         <string>Photovoltaics</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="electricstorage">
+      <widget class="QCheckBox" name="electricstorage1">
        <property name="text">
         <string>Electric Storage</string>
        </property>
@@ -103,8 +103,17 @@
       <height>31</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string notr="true"/>
+    </property>
+    <property name="statusTip">
+     <string notr="true"/>
+    </property>
+    <property name="locale">
+     <locale language="English" country="UnitedStates"/>
+    </property>
     <property name="standardButtons">
-     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     <set>QDialogButtonBox::Close|QDialogButtonBox::Discard|QDialogButtonBox::Ok</set>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton">
@@ -120,7 +129,7 @@
      <string>Hourly excels required?</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>427</x>
@@ -163,78 +172,72 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QPlainTextEdit" name="plainTextEdit">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>10</y>
-      <width>261</width>
-      <height>201</height>
+      <x>370</x>
+      <y>280</y>
+      <width>104</width>
+      <height>71</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>30</y>
+      <width>211</width>
+      <height>151</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="spacing">
-      <number>20</number>
-     </property>
-     <property name="leftMargin">
-      <number>20</number>
-     </property>
-     <property name="topMargin">
-      <number>20</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>20</number>
-     </property>
      <item>
-      <widget class="QListWidget" name="listWidget">
-       <property name="contextMenuPolicy">
-        <enum>Qt::DefaultContextMenu</enum>
+      <widget class="QLineEdit" name="OutputFolderLineEdit">
+       <property name="placeholderText">
+        <string>Choose Output folder</string>
        </property>
-       <property name="acceptDrops">
-        <bool>true</bool>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="inputMethodHints">
-        <set>Qt::ImhHiddenText</set>
+       <property name="cursorMoveStyle">
+        <enum>Qt::LogicalMoveStyle</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget_2"/>
+      <widget class="QLineEdit" name="WeatherDataLineEdit">
+       <property name="placeholderText">
+        <string>Choose TRY weather file</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget_3"/>
+      <widget class="QLineEdit" name="ElProfileLineEdit">
+       <property name="placeholderText">
+        <string>Choose electrical profile</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget_4"/>
+      <widget class="QLineEdit" name="HProfileLineEdit">
+       <property name="placeholderText">
+        <string>Choose heat profile</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
    <zorder>verticalLayoutWidget</zorder>
-   <zorder>boiler</zorder>
-   <zorder>label</zorder>
    <zorder>buttonBox</zorder>
-   <zorder>listWidget</zorder>
-   <zorder>btnOutputBrowse</zorder>
-   <zorder>listWidget_2</zorder>
-   <zorder>listWidget_3</zorder>
-   <zorder>listWidget_4</zorder>
-   <zorder>btnWeathreBrowse</zorder>
-   <zorder>btnHeatprofilesBrowse</zorder>
-   <zorder>btnElProfileBrowse</zorder>
    <zorder>radioButton</zorder>
+   <zorder>plainTextEdit</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>558</width>
+     <width>555</width>
      <height>21</height>
     </rect>
    </property>
@@ -244,9 +247,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>CHP</sender>
+   <sender>CHP1</sender>
    <signal>clicked(bool)</signal>
-   <receiver>CHP</receiver>
+   <receiver>CHP1</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -260,9 +263,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>boiler</sender>
+   <sender>boiler1</sender>
    <signal>clicked(bool)</signal>
-   <receiver>boiler</receiver>
+   <receiver>boiler1</receiver>
    <slot>update()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -276,9 +279,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>electricheater</sender>
+   <sender>electricheater1</sender>
    <signal>pressed()</signal>
-   <receiver>electricheater</receiver>
+   <receiver>electricheater1</receiver>
    <slot>update()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -292,9 +295,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>electricstorage</sender>
+   <sender>electricstorage1</sender>
    <signal>pressed()</signal>
-   <receiver>electricstorage</receiver>
+   <receiver>electricstorage1</receiver>
    <slot>update()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -308,9 +311,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>photovoltaics</sender>
+   <sender>photovoltaics1</sender>
    <signal>pressed()</signal>
-   <receiver>photovoltaics</receiver>
+   <receiver>photovoltaics1</receiver>
    <slot>update()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -384,6 +387,22 @@
     <hint type="destinationlabel">
      <x>90</x>
      <y>268</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnOutputBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>btnOutputBrowse</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>465</x>
+     <y>63</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>63</y>
     </hint>
    </hints>
   </connection>

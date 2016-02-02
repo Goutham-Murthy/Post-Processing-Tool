@@ -46,10 +46,10 @@ class PreProcessingTool:
                  global_radiation,
                  th_technologies=None,
                  el_technologies=None,
-                 max_el_technologies=3,
-                 min_el_technologies=1,
-                 max_th_technologies=2,
-                 min_th_technologies=1,
+                 # max_el_technologies=3,
+                 # min_el_technologies=1,
+                 # max_th_technologies=2,
+                 # min_th_technologies=1,
                  hourly_excels=True,
                  location='D:/aja-gmu/Simulation_Files/Output'):
         self.building_id = building_id
@@ -62,10 +62,12 @@ class PreProcessingTool:
             self.th_technologies = th_technologies
         if el_technologies is None:
             self.el_technologies = ['CHP', 'PV', 'ElSt']
-        self.max_el_technologies = max_el_technologies
-        self.min_el_technologies = min_el_technologies
-        self.max_th_technologies = max_th_technologies
-        self.min_th_technologies = min_th_technologies
+        else:
+            self.el_technologies = el_technologies
+        self.max_el_technologies = len(self.el_technologies)
+        self.min_el_technologies = 0
+        self.max_th_technologies = len(self.th_technologies)
+        self.min_th_technologies = 0
         self.hourly_excels = hourly_excels
         self.location = location
         # Initialising other variables

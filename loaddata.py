@@ -8,7 +8,7 @@ def get_weather_data(location):
     global_radiation = []
 
     # Opening the TRY data. The delimiter is ;.
-    reader = open(location+"/Wetter_Bottrop_Modelica.csv")
+    reader = open(location)
     csv_reader = csv.reader(reader, delimiter='\t')
 
     for row in islice(csv_reader, 2, None):
@@ -19,7 +19,7 @@ def get_weather_data(location):
 
 
 def get_heat_profiles(location):
-    wb = xlrd.open_workbook(location+'/Heat profiles.xlsx')
+    wb = xlrd.open_workbook(location)
 
     heat_profiles = []
     building_ids = []
@@ -44,7 +44,7 @@ def get_heat_profiles(location):
 
 
 def get_el_profiles(location):
-    wb = xlrd.open_workbook(location+'/Heat profiles.xlsx')
+    wb = xlrd.open_workbook(location)
 
     el_profiles = []
     building_ids = []
