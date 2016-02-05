@@ -31,12 +31,11 @@ class ControlMainWindow(QtGui.QMainWindow):
                                           heat_profiles_file=self.heat_profiles_file,
                                           electrical_profiles_file=self.electrical_profiles_file,
                                           hourly_excels=self.hourly_excels)
-        self.connect(self.worker_thread, self.worker_thread.signal, self.test_func)
+        self.connect(self.worker_thread, QtCore.SIGNAL("threadDone(QString)"), self.test_func, QtCore.Qt.DirectConnection)
         self.worker_thread.start()
 
-    @staticmethod
-    def test_func():
-        print "Done!!"
+    def test_func(self, message):
+        print message
 
     def get_technologies(self):
         if self.ui.check_box_chp.isChecked():
@@ -113,7 +112,7 @@ class WorkerThread(QtCore.QThread):
     def __init__(self, output_folder_name, weather_file, heat_profiles_file, electrical_profiles_file, th_technologies,
                  el_technologies, hourly_excels):
         super(WorkerThread, self).__init__()
-        self.signal = QtCore.SIGNAL("signal")
+        #self.done_signal = QtCore.Signal(str)
         self.electrical_profiles_file = electrical_profiles_file
         self.heat_profiles_file = heat_profiles_file
         self.output_folder_name = output_folder_name
@@ -140,7 +139,8 @@ class WorkerThread(QtCore.QThread):
                                                                   location=self.output_folder_name,
                                                                   hourly_excels=self.hourly_excels)
             building_number.generate_cases()
-        self.emit(self.signal, "threadDone")
+        print "yahoo!!"
+        self.emit(QtCore.SIGNAL("threadDone(QString)"), "Yahoo!! All done")
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
