@@ -5,6 +5,12 @@ from itertools import islice  # Importing islice to iterate over rows
 
 
 def get_weather_data(location):
+    """
+    Loads weather data
+
+    :param location: (string)String containing path to the weather file.
+    :return: global_radiation: (list)global radiation for PV and solar thermal operation.
+    """
     global_radiation = []
 
     # Opening the TRY data. The delimiter is ;.
@@ -19,6 +25,13 @@ def get_weather_data(location):
 
 
 def get_heat_profiles(location):
+    """
+    Loads heat profiles and corresponding building ids.
+
+    :param location: (string)String containing path to the weather file.
+    :return: heat_profiles(list)Heat profiles of the building.
+    :return: building_ids(list)Building ids
+    """
     wb = xlrd.open_workbook(location)
 
     heat_profiles = []
@@ -44,6 +57,13 @@ def get_heat_profiles(location):
 
 
 def get_el_profiles(location):
+    """
+    Loads electrical profiles and corresponding building ids.
+
+    :param location: (string)String containing path to the weather file.
+    :return: heat_profiles(list)Electrical profiles of the building.
+    :return: building_ids(list)Building ids
+    """
     wb = xlrd.open_workbook(location)
 
     el_profiles = []

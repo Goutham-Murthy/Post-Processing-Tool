@@ -79,7 +79,7 @@ class SolarThermal(annuity.Annuity):
         # Capital related costs for the boiler include price of purchase and
         # installation costs.
         self.A0 = 442.8*self.area + 1000
-        self.set_Ank()
+        self.set_ank()
 
         # Demand related costs include price of fuel to produce required heat
         drc = 0

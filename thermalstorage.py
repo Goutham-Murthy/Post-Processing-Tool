@@ -84,7 +84,7 @@ class ThermalStorage(annuity.Annuity):
         # Capital related costs for the boiler include price of purchase and
         # installation costs.
         self.A0 = 1.0912*th_capacity_l + 367.92 - bonus
-        self.set_Ank()
+        self.set_ank()
 
         # Demand related costs include price of fuel to produce required heat
         drc = 0

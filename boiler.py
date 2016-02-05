@@ -9,15 +9,13 @@ class Boiler(annuity.Annuity):
     """Class representing boiler technology.
 
     Attributes:
-        model (string)          : Model of the boiler.
-        th_capacity (float)     : Thermal capacity of the boiler [kW].
-        efficiency (float)      : Efficiency of the boiler [decimal<1].
-        heat_yearly (float)     : Sum value of heat provided by the boiler unit
-                                 over the year [kWh].
-        heat_hourly (float)     : Hourly values of the heat provided by the
-                                 boiler unit [kWh].
-        annuity (float)         : Annuity of the boiler [Euros].
-        emissions (float)       : CO2 emissions of the boiler [kg of CO2].
+        model_name: (string)Model of the boiler.
+        th_capacity: (float)Thermal capacity of the boiler [kW].
+        efficiency: (float)Efficiency of the boiler [decimal<1].
+        heat_hourly: (float)Hourly values of the heat provided by the boiler unit [kWh].
+        heat_yearly: (float)Sum value of heat provided by the boiler unit over the year [kWh].
+        annuity: (float)Annuity of the boiler [Euros].
+        emissions: (float)CO2 emissions of the boiler [kg of CO2].
     Extends:
         Annuity class
     """
@@ -25,10 +23,9 @@ class Boiler(annuity.Annuity):
     def __init__(self, model):
         """Constructor method for class Boiler.
 
-        Args:
-            model (string)          : Model of the boiler.
-            th_capacity (float)     : Thermal capacity of the boiler [kW].
-            efficiency (float)      : Efficiency of the boiler [decimal<1].
+        :param model: Tuple containing information about the boiler model in the form (name, thermal capacity,
+                                                                                       thermal efficiency)
+        :return: none
         """
         self.model_name = model[0]
         self.th_capacity = model[1]
@@ -52,16 +49,12 @@ class Boiler(annuity.Annuity):
 
     def get_heat(self, required_heat, hour):
         """
-        Given the required heat, function calculates the hourly heat met by
-        the boiler and returns the value for unsatisfied thermal demand.
+        Given the required heat, function calculates the hourly heat met by the boiler and returns the value for
+        unsatisfied thermal demand.
 
-        Args:
-            required_heat (float)   : Hourly heat demand of the building [kWh].
-            hour (int)              : Hour of the year.
-
-        Returns:
-            required_heat (float)   : Hourly thermal demand not met by the
-                                      boiler [kWh].
+        :param required_heat: (float)Hourly thermal demand [kWh].
+        :param hour: (int)Hour of the year[hour].
+        :return: required_heat: (float)Hourly thermal demand not met by the boiler unit [kWh].
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
@@ -81,11 +74,8 @@ class Boiler(annuity.Annuity):
         """
         Calculates the CO2 emissions of the boiler unit.
 
-        Args:
-            None.
-
-        Returns:
-            None
+        :param: none
+        :return: none
         """
         # CO2 emissions of condensing boilers are about 56 g/MJ or 201.6 g/kWh.
         # [R Dones, Thomas Heck, and S Hirschberg. Greenhouse gas emissions
@@ -95,18 +85,15 @@ class Boiler(annuity.Annuity):
 
     def set_annuity(self):
         """
-        Calculates the annuity of the boiler.
+        Calculates the annuity of the boiler unit.
 
-        Args:
-            None.
-
-        Returns:
-            None
+        :param: none
+        :return: none
         """
         # Capital related costs for the boiler include price of purchase and
         # installation costs.
         self.A0 = 79.061*self.th_capacity + 1229.8
-        self.set_Ank()
+        self.set_ank()
 
         # Demand related costs include price of fuel to produce required heat
         drc = self.gas_price*self.heat_yearly/self.efficiency

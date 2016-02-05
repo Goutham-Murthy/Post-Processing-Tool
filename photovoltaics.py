@@ -6,23 +6,26 @@ class Photovoltaics(annuity.Annuity):
     """Class representing PV.
 
     Attributes:
-        area (float)        : Area of the PV module [m2].
-        electricity_yearly (float) : Sum value of electricity provided by the PV
-                             unit over the year [kWh].
-        electricity_hourly (float) : Hourly values of the electricity provided by the
-                             PV unit [kWh].
-        annuity (float)       : Annuity of the PV [Euros].
-        emissions (float)     : CO2 emissions of the PV [kg of CO2].
+        model: (string)Model of the PV unit
+        area: (float)Area of the PV module [m2].
+        global_radiation: (list)Global radiation values ofr PV
+        electricity_yearly: (float)Sum value of electricity provided by the PV unit over the year [kWh].
+        electricity_hourly: (float)Hourly values of the electricity provided by the PV unit [kWh].
+        annuity: (float)Annuity of the PV [Euros].
+        emissions: (float)CO2 emissions of the PV [kg of CO2].
+        electricity_hourly_exported: (float)Hourly values of excess electricity exported to the grid [kWh]
+
     Extends:
         Annuity class
     """
 
     def __init__(self, model, area, global_radiation):
         """
-        Constructor method for class Boiler.
-        :param model: Model of the PV
-        :param area: Area of the PV module [m2].
-        :param global_radiation: Global radiation incident on the PV module.
+        Constructor method for class PV.
+
+        :param model: (string)Model of the PV
+        :param area: (float)Area of the PV module [m2].
+        :param global_radiation: (list)Global radiation incident on the PV module.
         :return: none
         """
         self.model = model
@@ -41,14 +44,10 @@ class Photovoltaics(annuity.Annuity):
         Given the required electricity, function calculates the hourly heat met
         by the PV and returns the value for electricity thermal demand.
 
-        Args:
-            required_electricity (float)    : Hourly electrical demand of the building
-                                            [kWh].
-            hour (int)                      : Hour of the year.
-
-        Returns:
-            required_electricity (float)   : Hourly electrical demand not met by the
-                                            PV [kWh].
+        :param required_electricity: (float)Hourly electrical demand of the building [kWh].
+        :param hour: (int)Hour of the year[hour].
+        :param ElSt: (class ElSt)Electrical storage instance when present[ElSt]
+        :return: required_electricity: (float)Hourly electrical demand not met by the PV unit [kWh].
         """
         # If electrical production is more than electrical thermal demand, meet the
         # demand entirely.
@@ -79,30 +78,28 @@ class Photovoltaics(annuity.Annuity):
 
     def set_emissions(self):
         """
-        Calculates the CO2 emissions of the boiler unit.
 
-        Args:
-            None.
+        Calculates the CO2 emissions of the PV unit.
 
-        Returns:
-            None
+        :param: none
+        :return: none
         """
+        # Each kWh of PV produced electricity saves 705 g of CO2
+        # Emissionsbilanz erneuerbarer Energietraeger Bestimmung der vermiedenen Emissionen im Jahr 2013. Standard,
+        # Umweltbundesamt, Dessau-Rolau, Germany, December 2013.
         self.emissions = (-705*self.electricity_yearly/1000)
         return
 
     def set_annuity(self):
         """
-        Calculates the annuity of the boiler.
+        Calculates the annuity of the CHP unit.
 
-        Args:
-            None.
-
-        Returns:
-            None
+        :param: none
+        :return: none
         """
         # Capital related costs for the boiler include price of purchase and installation costs.
         self.A0 = 200*self.area + 500 + 65*self.area
-        self.set_Ank()
+        self.set_ank()
 
         # Demand related costs include price of fuel to produce required heat
         drc = 0
@@ -121,5 +118,3 @@ class Photovoltaics(annuity.Annuity):
 
         self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)
         return
-# b=Boiler('Model',11.2,0.98)
-# print b.emissions

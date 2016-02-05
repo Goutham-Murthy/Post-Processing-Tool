@@ -3,13 +3,29 @@ import annuity
 
 
 class ElectricalStorage(annuity.Annuity):
+    """
+    Class for electrical storage technology. Heavy duty deep-cycle batteries considered.
+
+    Attributes:
+        model_name: (string)Model of the  electrical storage unit.
+        storage_capacity: (float)Storage capacity of the electrical storage [kWh].
+        loss_percent: (float)Loss percentage of the electrical storage unit [%].
+        electricity_stored: (float) Hourly values of electricity stored in the storage unit [kWh]
+        electricity_given: (float)Hourly values of electricity provided by the storage unit [kWh]
+        annuity: (float)Annuity of the CHP [Euros].
+        losses: (float)Total losses of the electrical storage unit in the year [kWh].
+        max_el: (float)Maximum electrical power that can be stored in the storage in an hour [kWh].
+
+    Extends:
+        Annuity class
+    """
     def __init__(self, model, storage_capacity, loss_percent):
         """
-        Class for electrical storage technology. Heavy duty deep-cycle batteries considered.
+        Constructor method for class ElectricalStorage.
 
         :param model: Model of the electrical storage.
-        :param storage_capacity: Storage capacity of the storage unit in kWh.
-        :param loss_percent: Loss percentage of the storage capacity.
+        :param storage_capacity: (float)Storage capacity of the storage unit[kWh].
+        :param loss_percent: (float)Loss percentage of the storage capacity[%].
         :return: none
         """
         self.model_name = model
@@ -27,9 +43,10 @@ class ElectricalStorage(annuity.Annuity):
         """
         Method to keep track of electricity given and stored in the storage unit.
 
-        :param required_electricity: Unsatisfied electricity demand in the specified hour [kWh].
-        :param hour: hour.
-        :return: none.
+        :param required_electricity: (float)Unsatisfied electricity demand in the specified hour [kWh].
+        :param hour: (float)hour.
+        :return: required_electricity: (float)Unsatisfied electricity demand in the specified hour after electricity
+                                       storage[kWh].
         """
         # If stored electricity is more than required electricity, meet the demand entirely.
         if required_electricity <= self.electricity_stored[hour]:
@@ -52,7 +69,7 @@ class ElectricalStorage(annuity.Annuity):
         """
         # Capital related costs for the battery include price of purchase and installation costs
         self.A0 = 0.1308*self.storage_capacity - 21.774
-        self.set_Ank()
+        self.set_ank()
 
         # Demand related costs include price of fuel to produce required heat
         self.Anv = 0
@@ -75,24 +92,29 @@ class ElectricalStorage(annuity.Annuity):
         """
         Method to store electricity in the electrical storage unit.
 
-        :param electricity: Excess electricity to be stored in the battery [kWh]
-        :param hour: hour [h]
+        :param electricity: (float)Excess electricity to be stored in the battery [kWh]
+        :param hour: (float)hour [h]
         :return: none
         """
         self.electricity_stored[hour] += electricity
         return
 
     def get_availability(self, hour):
+        """
+        Calculates available storage capacity in the electrical storage unit.
+        :param hour:  (float)hour [h]
+        :return: storage_capacity: (float)Available storage capacity in the electrical storage unit[kWh].
+        """
         return self.storage_capacity - self.electricity_stored[hour]
 
     def apply_losses(self, hour):
         """
         Method to calculate losses and re-initialise the values.
 
-        :param hour: hour
+        :param hour: (float)hour [h]
         :return: none
         """
         # Carry over heat to next hour
-        self.electricity_stored[hour] += (self.electricity_stored[hour-1] *
-                                    (100-self.loss_percent)/100)
+        self.electricity_stored[hour] += (self.electricity_stored[hour-1] * (100-self.loss_percent)/100)
         self.losses += ((self.electricity_stored[hour-1]*self.loss_percent)/100)
+        return
