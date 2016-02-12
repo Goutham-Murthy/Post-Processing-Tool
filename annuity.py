@@ -17,15 +17,15 @@ class Annuity(object):
         Contains common functions and variables needed for calculation of the annuities. set_annuity is an abstract
         method which is implemented in the child classes and is different for each technology.
 
-        :param deperiod: (float)Number of years of the depreciation period [years]
-        :param effop: (float)Effort for operation [hours/annum]
-        :param fwins: (float)Effort for annual maintenance and inspection as percentage of initial investment [%]
-        :param finst: (float)Effort for annual repairs as percentage of initial investment [%]
-        :param obperiod: (float)Number of years of the observation period [years]
-        :param q: (float)Interest-rate factor [-]
-        :param r: (float)Price change factor [-]
-        :param gas_price: (float)Price of gas per kWh [Euro/kWh]
-        :param electricity_price: (float)Price of electricity per kWh imported from grid [Euro/kWh]
+        :param deperiod: Number of years of the depreciation period [years]
+        :param effop: Effort for operation [hours/annum]
+        :param fwins: Effort for annual maintenance and inspection as percentage of initial investment [%]
+        :param finst: Effort for annual repairs as percentage of initial investment [%]
+        :param obperiod: Number of years of the observation period [years]
+        :param q: Interest-rate factor [-]
+        :param r: Price change factor [-]
+        :param gas_price: Price of gas per kWh [Euro/kWh]
+        :param electricity_price: Price of electricity per kWh imported from grid [Euro/kWh]
         :return: none
 
         """
@@ -86,8 +86,8 @@ class Annuity(object):
 
         Calculates the price dynamic cash value factor
 
-        :param r: (float)Price change factor [-]
-        :return: b: (float)Price dynamic cash value factor [-]
+        :param r: Price change factor [-]
+        :return: b: Price dynamic cash value factor [-]
 
         """
         b = (1-(r/self.q)**self.obperiod)/(self.q-r)

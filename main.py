@@ -12,9 +12,9 @@ class ControlMainWindow(QtGui.QMainWindow):
     Class for GUI implementation
 
     Attributes:
-        ui: (gui.UiMainWindow)User interface inherited from UiMainWindow in gui.py
-        th_technologies: (list)List of thermal technologies to be analysed.
-        el_technologies: (list)List of electrical technologies to be analysed.
+        ui: User interface inherited from UiMainWindow in gui.py
+        th_technologies: List of thermal technologies to be analysed.
+        el_technologies: List of electrical technologies to be analysed.
     Extends:
         QtGui.QtMainWindow
     """
@@ -63,7 +63,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         """
         Method to print success message to the console.
 
-        :param message: (String) String to be printed
+        :param message: String to be printed
         :return: none
         """
         print message
@@ -180,26 +180,26 @@ class WorkerThread(QtCore.QThread):
     Class representing the worker thread for the GUI. All the processing of the data happens here.
 
     Attributes:
-        electrical_profiles_file: (string) Path to the file containing electrical profiles
-        heat_profiles_file: (string) Path to the file containing heat profiles
-        output_folder_name: (string) Path to the folder where the output files have to be created
-        weather_file: (string) Path to the file containing weather data
-        th_technologies: [list) List containing thermal technologies which can be present in the system
-        el_technologies: (list) List containing electrical technologies which can be present in the system
-        hourly_excels: (bool) True if hourly excels are required. False otherwise.
+        electrical_profiles_file: Path to the file containing electrical profiles
+        heat_profiles_file: Path to the file containing heat profiles
+        output_folder_name: Path to the folder where the output files have to be created
+        weather_file: Path to the file containing weather data
+        th_technologies: List containing thermal technologies which can be present in the system
+        el_technologies: List containing electrical technologies which can be present in the system
+        hourly_excels: True if hourly excels are required. False otherwise.
     """
     def __init__(self, output_folder_name, weather_file, heat_profiles_file, electrical_profiles_file, th_technologies,
                  el_technologies, hourly_excels):
         """
         Constructor method for worker thread
 
-        :param output_folder_name: (string) Path to the folder where the output files have to be created
-        :param weather_file: (string) Path to the file containing weather data
-        :param heat_profiles_file: (string) Path to the file containing heat profiles
-        :param electrical_profiles_file: (string) Path to the file containing electrical profiles
-        :param th_technologies: [list) List containing thermal technologies which can be present in the system
-        :param el_technologies: (list) List containing electrical technologies which can be present in the system
-        :param hourly_excels: (bool) True if hourly excels are required. False otherwise.
+        :param output_folder_name: Path to the folder where the output files have to be created
+        :param weather_file: Path to the file containing weather data
+        :param heat_profiles_file: Path to the file containing heat profiles
+        :param electrical_profiles_file: Path to the file containing electrical profiles
+        :param th_technologies: List containing thermal technologies which can be present in the system
+        :param el_technologies: List containing electrical technologies which can be present in the system
+        :param hourly_excels: True if hourly excels are required. False otherwise.
         :return: none.
         """
         super(WorkerThread, self).__init__()

@@ -7,13 +7,13 @@ class SolarThermal(annuity.Annuity):
     Class representing Solar Thermal Collectors.
 
     Attributes:
-        model: (string) Model of the solar thermal collector module
-        area: (float) Area of the solar thermal collector module [m2]
-        global_radiation: (list) Hourly values of thermal radiation
-        heat_hourly: (list) Hourly values of electricity given by the solar thermal unit [kWh]
-        heat_yearly: (float)Sum value of heat provided by the solar thermal unit over the year [kWh].
-        annuity: (float)Annuity of the solar thermal unit [Euros].
-        emissions: (float)CO2 emissions of the solar thermal unit[kg of CO2].
+        model: Model of the solar thermal collector module
+        area: Area of the solar thermal collector module [m2]
+        global_radiation: Hourly values of thermal radiation
+        heat_hourly: Hourly values of electricity given by the solar thermal unit [kWh]
+        heat_yearly: Sum value of heat provided by the solar thermal unit over the year [kWh].
+        annuity: Annuity of the solar thermal unit [Euros].
+        emissions: CO2 emissions of the solar thermal unit[kg of CO2].
     Extends:
         Annuity class
 
@@ -22,8 +22,8 @@ class SolarThermal(annuity.Annuity):
         """
         Constructor class for the solar thermal unit.
 
-        :param model: (string) Model of the solar thermal collector
-        :param area: float) Area of the collector
+        :param model: Model of the solar thermal collector
+        :param area: Area of the collector
         :return: none
         """
         self.model = model
@@ -41,10 +41,10 @@ class SolarThermal(annuity.Annuity):
         Given the required heat, function calculates the hourly heat met by the solar thermal unit and returns the value
          for unsatisfied thermal demand.
 
-        :param required_heat: (float)Hourly heat demand of the building[kWh].
-        :param hour: (int) Hour of the year
-        :param ThSt: (thermal storage class)Thermal Storage instance when present.
-        :return: required_heat: (float) Hourly thermal demand not met by the solar thermal unit [kWh].
+        :param required_heat: Hourly heat demand of the building[kWh].
+        :param hour: Hour of the year
+        :param ThSt: Thermal Storage instance when present.
+        :return: required_heat: Hourly thermal demand not met by the solar thermal unit [kWh].
         """
         self.heat_hourly[hour] = 0.7*self.area*self.global_radiation[hour]
         if ThSt is not None:

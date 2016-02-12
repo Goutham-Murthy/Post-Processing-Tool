@@ -8,8 +8,8 @@ def get_weather_data(location):
     """
     Loads weather data
 
-    :param location: (string)String containing path to the weather file.
-    :return: global_radiation: (list)global radiation for PV and solar thermal operation.
+    :param location: String containing path to the weather file.
+    :return: global_radiation: global radiation for PV and solar thermal operation.
     """
     global_radiation = []
 
@@ -28,9 +28,9 @@ def get_heat_profiles(location):
     """
     Loads heat profiles and corresponding building ids.
 
-    :param location: (string)String containing path to the weather file.
-    :return: heat_profiles(list)Heat profiles of the building.
-    :return: building_ids(list)Building ids
+    :param location: String containing path to the weather file.
+    :return: heat_profilesHeat profiles of the building.
+    :return: building_idsBuilding ids
     """
     wb = xlrd.open_workbook(location)
 
@@ -60,9 +60,9 @@ def get_el_profiles(location):
     """
     Loads electrical profiles and corresponding building ids.
 
-    :param location: (string)String containing path to the weather file.
-    :return: heat_profiles(list)Electrical profiles of the building.
-    :return: building_ids(list)Building ids
+    :param location: String containing path to the weather file.
+    :return: heat_profilesElectrical profiles of the building.
+    :return: building_idsBuilding ids
     """
     wb = xlrd.open_workbook(location)
 

@@ -51,8 +51,8 @@ def get_chp_capacity(required_capacity):
     """
     Returns commercially available CHP model details closest to required thermal capacity of the CHP.
 
-    :param required_capacity: (float) Required thermal capacity of the CHP unit[kW].
-    :return: model: (tuple) Specifications of the CHP unit with thermal capacity closest to the required capacity
+    :param required_capacity: Required thermal capacity of the CHP unit[kW].
+    :return: model: Specifications of the CHP unit with thermal capacity closest to the required capacity
     """
     model = ()
     if required_capacity > 42:
@@ -71,8 +71,8 @@ def get_b_capacity(required_capacity):
     """
     Returns commercially available boiler model details closest to required thermal capacity of the boiler.
 
-    :param required_capacity: (float) Required thermal capacity of the boiler unit[kW].
-    :return: model: (tuple) Specifications of the boiler unit with thermal capacity closest to the required capacity
+    :param required_capacity: Required thermal capacity of the boiler unit[kW].
+    :return: model: Specifications of the boiler unit with thermal capacity closest to the required capacity
     """
     model = ()
     max_difference = 200000
@@ -93,8 +93,8 @@ def get_thst_capacity(required_capacity):
     Returns commercially available thermal storage model details closest to required thermal capacity of the thermal
     storage unit.
 
-    :param required_capacity: (float) Required thermal capacity of the thermal storage unit[kWh].
-    :return: model: (tuple) Specifications of the thermal storage unit with thermal capacity closest to the required
+    :param required_capacity: Required thermal capacity of the thermal storage unit[kWh].
+    :return: model: Specifications of the thermal storage unit with thermal capacity closest to the required
                     capacity
     """
     model = ()
@@ -116,8 +116,8 @@ def get_solth_capacity(required_capacity):
     """
     Returns commercially available solar thermal model area closest to required area of the solar thermal unit.
 
-    :param required_capacity: (float) Required area of the solar thermal unit[m2].
-    :return: capacity: (float) Area of the solar thermal unit with area closest to the required area.
+    :param required_capacity: Required area of the solar thermal unit[m2].
+    :return: capacity: Area of the solar thermal unit with area closest to the required area.
     """
     # Each module is considered to be of area 2.55 m2
     capacity = math.floor(required_capacity/2.55)*2.55
@@ -128,8 +128,8 @@ def get_pv_capacity(required_capacity):
     """
     Returns commercially available PV model area closest to required area of the PV unit.
 
-    :param required_capacity: (float) Required area of the PV[m2].
-    :return: capacity: (float) Area of the PV unit with area closest to the required area.
+    :param required_capacity:  Required area of the PV[m2].
+    :return: capacity:  Area of the PV unit with area closest to the required area.
     """
     # Each module is considered to be of area 1.6434 m2
     capacity = math.floor(required_capacity/1.6434)*1.6434
@@ -141,8 +141,8 @@ def get_elhe_capacity(required_capacity):
     Returns commercially available electrical heater model capacity closest to required capacity of the electrical
     heater unit.
 
-    :param required_capacity: (float) Required capacity of the electrical heater[kW].
-    :return: capacity: (float) Capacity of the electrical heater unit with area closest to the required capacity[kW].
+    :param required_capacity:  Required capacity of the electrical heater[kW].
+    :return: capacity:  Capacity of the electrical heater unit with area closest to the required capacity[kW].
     """
     # Multiples of 100
     capacity = math.ceil(required_capacity/100.0)*100
@@ -153,8 +153,8 @@ def change_kwh_to_litres(capacity_in_kwh):
     """
     Converts kWh to liters for the thermal storage unit
 
-    :param capacity_in_kwh: (float)Capacity of the thermal storage in kWh[kWh].
-    :return: capacity_in_liters: (float)Capacity of the thermal storage in liters[liters].
+    :param capacity_in_kwh: Capacity of the thermal storage in kWh[kWh].
+    :return: capacity_in_liters: Capacity of the thermal storage in liters[liters].
     """
     # capacity in liters = capacity in kwh*360000/(density of water * Cp of water * temperature difference between top
     #                                              and bottom parts of the storage, assumed to be 40 K)
@@ -166,8 +166,8 @@ def change_litres_to_kwh(capacity_in_litres):
     """
     Converts kWh to liters for the thermal storage unit
 
-    :param capacity_in_litres:  (float)Capacity of the thermal storage in liters[liters].
-    :return: capacity_in_kwh: (float)Capacity of the thermal storage in kWh[kWh].
+    :param capacity_in_litres:  Capacity of the thermal storage in liters[liters].
+    :return: capacity_in_kwh: Capacity of the thermal storage in kWh[kWh].
     """
     capacity_in_kwh = capacity_in_litres*4180.0*40.0/3600000.0
     return capacity_in_kwh

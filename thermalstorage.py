@@ -7,20 +7,19 @@ class ThermalStorage(annuity.Annuity):
     Class representing Thermal Storage technology.
 
     Attributes:
-        model_name: (string)Model of the thermal storage unit.
-        th_capacity: (float) Thermal capacity of the storage unit [kWh].
-        loss_percent: (float) Percentage of heat lost in the thermal storage unit over each hour [%].
-        heat_stored: (float) Heat present in the thermal storage unit at the beginning of hour [kWh].
-        heat_given: (float) Hourly values of the heat provided by the thermal storage unit [kWh].
-        annuity: (float) Annuity of the thermal storage unit [Euros].
-        losses: (float) Total heat losses from the thermal storage unit [kWh]
+        model_name: Model of the thermal storage unit.
+        th_capacity: Thermal capacity of the storage unit [kWh].
+        loss_percent: Percentage of heat lost in the thermal storage unit over each hour [%].
+        heat_stored: Heat present in the thermal storage unit at the beginning of hour [kWh].
+        heat_given: Hourly values of the heat provided by the thermal storage unit [kWh].
+        annuity: Annuity of the thermal storage unit [Euros].
+        losses: Total heat losses from the thermal storage unit [kWh]
     Extends:
         Annuity class
     """
 
     def __init__(self, model):
         """
-        "
         Constructor method for class thermal storage.
 
         :param model: Tuple containing information about the thermal storage model in the
@@ -43,9 +42,9 @@ class ThermalStorage(annuity.Annuity):
         Given the required heat, function calculates the hourly heat met by the thermal storage and returns the value
         for unsatisfied thermal demand.
 
-        :param required_heat: (float)Hourly thermal demand [kWh].
-        :param hour: (int)Hour of the year[hour].
-        :return: required_heat: (float)Hourly thermal demand not met by the thermal storage unit [kWh].
+        :param required_heat: Hourly thermal demand [kWh].
+        :param hour: Hour of the year[hour].
+        :return: required_heat: Hourly thermal demand not met by the thermal storage unit [kWh].
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
@@ -102,7 +101,7 @@ class ThermalStorage(annuity.Annuity):
         """
         Given the thermal capacity of the storage unit in kWh, return the capacity in liters.
 
-        :return: th_capacity_l   : (float)Thermal capacity of storage unit in liters.
+        :return: th_capacity_l: Thermal capacity of storage unit in liters.
         """
         th_capacity_l = self.th_capacity*3600000 / (4180*40)
         return th_capacity_l
@@ -112,11 +111,9 @@ class ThermalStorage(annuity.Annuity):
         Method to store heat in the thermal storage unit. Method used by other
         active heat producing technologies like CHP, boiler etc.
 
-        Args:
-            heat    : Value of heat to be stored [kWh].
-            hour    : Hour.
-        Returns:
-            None.
+        :param heat: Value of heat to be stored [kWh].
+        :param hour: hour.
+        :return: none
         """
         self.heat_stored[hour] += heat
         return
@@ -128,11 +125,8 @@ class ThermalStorage(annuity.Annuity):
         """
         Method to calculate losses and re-initialise the values.
 
-        Args:
-            hour    : Hour.
-
-        Returns:
-            None.
+        :param hour: hour
+        :return:
         """
         # Carry over heat to next hour
         self.heat_stored[hour] += (self.heat_stored[hour-1] *

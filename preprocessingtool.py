@@ -21,30 +21,30 @@ class PreProcessingTool:
     """PreProcessingTool
 
     Attributes:
-        building_id         : (string/float)Building ID of the particular building.
-        thermal_profile     : (list)Thermal profile of the building.
-        electrical_profile  : (list)Electrical profile of the building.
-        global_radiation    : (list)Hourly global radiation values.
-        th_technologies     : (list)List of the thermal technologies to be considered.
-        el_technologies     : (list)List of the electrical technologies to be considered.
-        max_el_technologies : (int)Maximum number of electrical technologies to be considered.
-        min_el_technologies : (int)Minimum number of electrical technologies to be considered.
-        max_th_technologies : (int)Maximum number of thermal technologies to be considered.
-        min_th_technologies : (int)Minimum number of thermal technologies to be considered.
-        hourly_excels       : (bool)Hourly excels required? True or False.
-        location            : (string)Address of the folder where the output folder is to be created.
-        maxr_th_power       : (float)Maximum thermal capacity of the CHP in the presence of a peak load device.
+        building_id         : Building ID of the particular building.
+        thermal_profile     : Thermal profile of the building.
+        electrical_profile  : Electrical profile of the building.
+        global_radiation    : Hourly global radiation values.
+        th_technologies     : List of the thermal technologies to be considered.
+        el_technologies     : List of the electrical technologies to be considered.
+        max_el_technologies : Maximum number of electrical technologies to be considered.
+        min_el_technologies : Minimum number of electrical technologies to be considered.
+        max_th_technologies : Maximum number of thermal technologies to be considered.
+        min_th_technologies : Minimum number of thermal technologies to be considered.
+        hourly_excels       : Hourly excels required? True or False.
+        location            : Address of the folder where the output folder is to be created.
+        maxr_th_power       : Maximum thermal capacity of the CHP in the presence of a peak load device.
                               Is calculated according to maximum rectangle method.
-        peak_th_power       : (float)Peak thermal capacity needed to meet the demands of the consumer.
-        KPI                 : (List of tuples)KPI array containing the output data for the tool.
-        OnOffCHP            : (CHP class)Instance of the CHP class with ON/OFF operating strategy.
-        B                   : (Boiler class)Instance of boiler class
-        ElHe                : (Electric heater class)Instance of the electric heater class.
-        SolTh               : (Solar thermal class)Instance of the solar thermal class.
-        PV                  : (Photovoltaics class)Instance of the PV class.
-        ThSt                : (Thermal Storage class)Instance of the thermal storage class.
-        ElSt                : (Electric storage class)Instance of the electric storage class.
-        ElGrid              : (electric heater class)Instance of the electric grid glass.
+        peak_th_power       : Peak thermal capacity needed to meet the demands of the consumer.
+        KPI                 : KPI array containing the output data for the tool.
+        OnOffCHP            : Instance of the CHP class with ON/OFF operating strategy.
+        B                   : Instance of boiler class
+        ElHe                : Instance of the electric heater class.
+        SolTh               : Instance of the solar thermal class.
+        PV                  : Instance of the PV class.
+        ThSt                : Instance of the thermal storage class.
+        ElSt                : Instance of the electric storage class.
+        ElGrid              : Instance of the electric grid glass.
     """
 
     def __init__(self, building_id,
@@ -62,14 +62,14 @@ class PreProcessingTool:
         """
         Constructor class for the pre-processing tool
 
-        :param building_id: (string/float)Building ID of the particular building.
-        :param thermal_profile: (list)Thermal profile of the building.
-        :param electrical_profile: (list)Electrical profile of the building.
-        :param global_radiation: (list)Hourly global radiation values.
-        :param th_technologies: (list)List of the thermal technologies to be onsidered.
-        :param el_technologies: (list)List of the electrical technologies to be considered.
-        :param hourly_excels: (bool)Hourly excels required? True or False.
-        :param location: (string)Address of the folder where the output folder is to be created.
+        :param building_id: Building ID of the particular building.
+        :param thermal_profile: Thermal profile of the building.
+        :param electrical_profile: Electrical profile of the building.
+        :param global_radiation: Hourly global radiation values.
+        :param th_technologies: List of the thermal technologies to be onsidered.
+        :param el_technologies: List of the electrical technologies to be considered.
+        :param hourly_excels: Hourly excels required? True or False.
+        :param location: Address of the folder where the output folder is to be created.
         :return: none
         """
         self.building_id = building_id
@@ -193,9 +193,9 @@ class PreProcessingTool:
         Updates the KPI variable and stores information about the different systems and corresponding thermal and
         electrical priorities.
 
-        :param system: (list)List containing the technologies in the system
-        :param th_order: (list)Thermal priority
-        :param el_order: (list)Electrical priority
+        :param system: List containing the technologies in the system
+        :param th_order: Thermal priority
+        :param el_order: Electrical priority
         :return: none
         """
         total_annuity = 0
@@ -275,7 +275,7 @@ class PreProcessingTool:
         Returns capacity calculated according to maximum rectangle method. Is used in dimensioning the CHP unit in the
         presence of a peak load device.
 
-        :param thermal_profile: (list)Thermal profile of the building.
+        :param thermal_profile: Thermal profile of the building.
         :return: none
         """
         # Sort thermal demand in decreasing order for the load distribution
@@ -298,7 +298,7 @@ class PreProcessingTool:
         """
         Initialise required technologies according to the system passed to it.
 
-        :param system: (list)List of technologies present in the system.
+        :param system: List of technologies present in the system.
         :return: none
         """
         # ---------------------------------------------------------------------
@@ -371,8 +371,8 @@ class PreProcessingTool:
         """
         Performs the thermal and electrical calculations.
 
-        :param th_order: (list)Thermal priority list
-        :param el_order: (list)Electrical priority list
+        :param th_order: Thermal priority list
+        :param el_order: Electrical priority list
         :return: none
         """
         print th_order, el_order
@@ -429,9 +429,9 @@ class PreProcessingTool:
         """
         Writes hourly data into the excel sheet.
 
-        :param workbook_name: (string)String containing the name of the excel sheet
-        :param th_order: (list)Thermal priority
-        :param el_order: (list)Electrical priority
+        :param workbook_name: String containing the name of the excel sheet
+        :param th_order: Thermal priority
+        :param el_order: Electrical priority
         :return: none
         """
         # ---------------------------------------------------------------------
@@ -538,8 +538,8 @@ class PreProcessingTool:
         """
         Concatenates the name of the technologies and generates the system name for excel workbook naming
 
-        :param system: (list)set of technologies in system
-        :return: system_name : (list)set of technologies in system- suitably formatted for excel workbook naming
+        :param system: set of technologies in system
+        :return: system_name : set of technologies in system- suitably formatted for excel workbook naming
         """
         system_name = ''
         count = 1
@@ -556,8 +556,8 @@ class PreProcessingTool:
         """
         Returns the priority list suitably formatted for excel worksheet naming
 
-        :param order: (list)set of technologies in thermal or electrical priority
-        :return: priority : (list)set of technologies in priority list- suitably formatted for excel worksheet naming
+        :param order: set of technologies in thermal or electrical priority
+        :return: priority : set of technologies in priority list- suitably formatted for excel worksheet naming
         """
         priority = ''
         count = 1

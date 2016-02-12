@@ -6,10 +6,10 @@ class ElectricalGrid(annuity.Annuity):
     """Class representing the electrical grid.
 
     Attributes:
-        electricity_hourly: (float)Hourly values of electricity exported to the grid [kWh]
-        electricity_yearly: (float)Sum value of electricity exported to teh grid throughout the year [kWh]
-        emissions: (float) Emissions due to imported electricity throughout the year [kg of CO2].
-        annuity: (float)Annuity of the grid thanks to the imported electricity [Euros].
+        electricity_hourly: Hourly values of electricity exported to the grid [kWh]
+        electricity_yearly: Sum value of electricity exported to teh grid throughout the year [kWh]
+        emissions:  Emissions due to imported electricity throughout the year [kg of CO2].
+        annuity: Annuity of the grid thanks to the imported electricity [Euros].
     Extends:
         Annuity class
     """
@@ -71,8 +71,8 @@ class ElectricalGrid(annuity.Annuity):
         """
         Calculates electricity provided by electrical grid.
 
-        :param required_electricity: (float)Hourly electrical demand of the building [kWh].
-        :param hour: (int)Hour of the year[hour].
+        :param required_electricity: Hourly electrical demand of the building [kWh].
+        :param hour: Hour of the year[hour].
         :return: none
         """
         self.electricity_yearly += required_electricity

@@ -6,14 +6,14 @@ class Photovoltaics(annuity.Annuity):
     """Class representing PV.
 
     Attributes:
-        model: (string)Model of the PV unit
-        area: (float)Area of the PV module [m2].
-        global_radiation: (list)Global radiation values ofr PV
-        electricity_yearly: (float)Sum value of electricity provided by the PV unit over the year [kWh].
-        electricity_hourly: (float)Hourly values of the electricity provided by the PV unit [kWh].
-        annuity: (float)Annuity of the PV [Euros].
-        emissions: (float)CO2 emissions of the PV [kg of CO2].
-        electricity_hourly_exported: (float)Hourly values of excess electricity exported to the grid [kWh]
+        model: Model of the PV unit
+        area: Area of the PV module [m2].
+        global_radiation: Global radiation values ofr PV
+        electricity_yearly: Sum value of electricity provided by the PV unit over the year [kWh].
+        electricity_hourly: Hourly values of the electricity provided by the PV unit [kWh].
+        annuity: Annuity of the PV [Euros].
+        emissions: CO2 emissions of the PV [kg of CO2].
+        electricity_hourly_exported: Hourly values of excess electricity exported to the grid [kWh]
 
     Extends:
         Annuity class
@@ -23,9 +23,9 @@ class Photovoltaics(annuity.Annuity):
         """
         Constructor method for class PV.
 
-        :param model: (string)Model of the PV
-        :param area: (float)Area of the PV module [m2].
-        :param global_radiation: (list)Global radiation incident on the PV module.
+        :param model: Model of the PV
+        :param area: Area of the PV module [m2].
+        :param global_radiation: Global radiation incident on the PV module.
         :return: none
         """
         self.model = model
@@ -44,10 +44,10 @@ class Photovoltaics(annuity.Annuity):
         Given the required electricity, function calculates the hourly heat met
         by the PV and returns the value for electricity thermal demand.
 
-        :param required_electricity: (float)Hourly electrical demand of the building [kWh].
-        :param hour: (int)Hour of the year[hour].
-        :param ElSt: (class ElSt)Electrical storage instance when present[ElSt]
-        :return: required_electricity: (float)Hourly electrical demand not met by the PV unit [kWh].
+        :param required_electricity: Hourly electrical demand of the building [kWh].
+        :param hour: Hour of the year[hour].
+        :param ElSt: Electrical storage instance when present[ElSt]
+        :return: required_electricity: Hourly electrical demand not met by the PV unit [kWh].
         """
         # If electrical production is more than electrical thermal demand, meet the
         # demand entirely.

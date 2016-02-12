@@ -9,12 +9,12 @@ class ElectricHeater(annuity.Annuity):
     """Class representing Electric Heaters. Efficiency is approximated to 100%.
 
     Attributes:
-        model: (string)Model of the Electric Heater.
-        th_capacity: (float)Thermal capacity of the Electric Heater [kW].
-        heat_yearly: (float)Sum value of heat provided by the electric heater unit over the year [kWh].
-        heat_hourly: (float)Hourly values of the heat provided by the Electric Heater unit [kWh].
-        annuity: (float)Annuity of the Electric Heater [Euros].
-        emissions: (float)CO2 emissions of the electric heater unit [kg of CO2].
+        model: Model of the Electric Heater.
+        th_capacity: Thermal capacity of the Electric Heater [kW].
+        heat_yearly: Sum value of heat provided by the electric heater unit over the year [kWh].
+        heat_hourly: Hourly values of the heat provided by the Electric Heater unit [kWh].
+        annuity: Annuity of the Electric Heater [Euros].
+        emissions: CO2 emissions of the electric heater unit [kg of CO2].
 
     Extends:
         Annuity class
@@ -23,8 +23,8 @@ class ElectricHeater(annuity.Annuity):
         """
         Constructor method for Electric Heater Class
 
-        :param  model: (string)Model of the Electric Heater.
-        :param  th_capacity: (float)Thermal capacity of the Electric Heater [kW].
+        :param  model: Model of the Electric Heater.
+        :param  th_capacity: Thermal capacity of the Electric Heater [kW].
         :return: none
         """
         self.model = model
@@ -42,9 +42,9 @@ class ElectricHeater(annuity.Annuity):
         Given the required heat, function calculates the hourly heat met by the electric heater and returns the
         value for unsatisfied thermal demand.
 
-        :param required_heat: (float)Hourly thermal demand [kWh].
-        :param hour: (int)Hour of the year[hour].
-        :return: required_heat: (float)Hourly thermal demand not met by the electric heater unit [kWh].
+        :param required_heat: Hourly thermal demand [kWh].
+        :param hour: Hour of the year[hour].
+        :return: required_heat: Hourly thermal demand not met by the electric heater unit [kWh].
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
