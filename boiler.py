@@ -21,7 +21,8 @@ class Boiler(annuity.Annuity):
     """
 
     def __init__(self, model):
-        """Constructor method for class Boiler.
+        """
+        Constructor method for class Boiler.
 
         :param model: Tuple containing information about the boiler model in the form (name, thermal capacity,
                                                                                        thermal efficiency)

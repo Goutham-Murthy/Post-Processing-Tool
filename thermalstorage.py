@@ -7,27 +7,27 @@ class ThermalStorage(annuity.Annuity):
     Class representing Thermal Storage technology.
 
     Attributes:
-        model (string)          : Model of the thermal storage unit.
-        th_capacity (float)     : Thermal capacity of the storage unit [kWh].
-        loss_percent (float)    : Percentage of heat lost in the thermal
-                                 storage unit over each hour [%].
-        heat_stored (float)     : Heat present in the thermal storage unit
-                                 at the beginning of hour [kWh].
-        heat_given(float)     : Hourly values of the heat provided by the
-                                 thermal storage unit [kWh].
-        annuity (float)         : Annuity of the thermal storage unit [Euros].
-        losses (float)          : Total heat losses from the thermal storage
-                                 unit [kWh]
+        model_name: (string)Model of the thermal storage unit.
+        th_capacity: (float) Thermal capacity of the storage unit [kWh].
+        loss_percent: (float) Percentage of heat lost in the thermal storage unit over each hour [%].
+        heat_stored: (float) Heat present in the thermal storage unit at the beginning of hour [kWh].
+        heat_given: (float) Hourly values of the heat provided by the thermal storage unit [kWh].
+        annuity: (float) Annuity of the thermal storage unit [Euros].
+        losses: (float) Total heat losses from the thermal storage unit [kWh]
     Extends:
         Annuity class
     """
 
     def __init__(self, model):
-        """Constructor method for class thermal storage.
-
-        Args:
-            model (string)          : Model of the thermal storage unit.
         """
+        "
+        Constructor method for class thermal storage.
+
+        :param model: Tuple containing information about the thermal storage model in the
+                       form (name, area, loss percentage)
+        :return: none
+        """
+        print model
         self.model_name = model[0]
         self.th_capacity = model[1]
         self.loss_percent = model[2]
@@ -40,16 +40,12 @@ class ThermalStorage(annuity.Annuity):
 
     def get_heat(self, required_heat, hour):
         """
-        Given the required heat, function calculates the hourly heat met by
-        the boiler and returns the value for unsatisfied thermal demand.
+        Given the required heat, function calculates the hourly heat met by the thermal storage and returns the value
+        for unsatisfied thermal demand.
 
-        Args:
-            required_heat (float)   : Hourly heat demand of the building [kWh].
-            hour (int)              : Hour of the year.
-
-        Returns:
-            required_heat (float)   : Hourly thermal demand not met by the
-                                      boiler [kWh].
+        :param required_heat: (float)Hourly thermal demand [kWh].
+        :param hour: (int)Hour of the year[hour].
+        :return: required_heat: (float)Hourly thermal demand not met by the thermal storage unit [kWh].
         """
         # If thermal capacity is more than hourly thermal demand, meet the
         # demand entirely.
@@ -69,11 +65,8 @@ class ThermalStorage(annuity.Annuity):
         """
         Calculates the annuity of the thermal storage unit.
 
-        Args:
-            None.
-
-        Returns:
-            None
+        :param: none
+        :return: none
         """
         th_capacity_l = self.get_cap_l
 
@@ -107,15 +100,11 @@ class ThermalStorage(annuity.Annuity):
     @property
     def get_cap_l(self):
         """
-        Given the thermal capacity of the storage unit in kWh, return the
-        capacity in liters.
+        Given the thermal capacity of the storage unit in kWh, return the capacity in liters.
 
-        Args:
-            none.
-        Returns:
-            th_capacity_l   : Thermal capacity of storage unit in liters.
+        :return: th_capacity_l   : (float)Thermal capacity of storage unit in liters.
         """
-        th_capacity_l = self.th_capacity*3600000/(4180*40)
+        th_capacity_l = self.th_capacity*3600000 / (4180*40)
         return th_capacity_l
 
     def store_heat(self, heat, hour):

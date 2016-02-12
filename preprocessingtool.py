@@ -21,23 +21,30 @@ class PreProcessingTool:
     """PreProcessingTool
 
     Attributes:
-        building_id         : Building ID of the particular building.
-        thermal_profile     : Thermal profile of the building.
-        th_technologies     : List of the thermal technologies to be
-                             considered.
-        el_technologies     : List of the electrical technologies to be
-                             considered.
-        max_el_technologies : Maximum number of electrical technologies to be
-                             considered.
-        min_el_technologies : Minimum number of electrical technologies to be
-                             considered.
-        max_th_technologies : Maximum number of thermal technologies to be
-                             considered.
-        min_th_technologies : Minimum number of thermal technologies to be
-                             considered.
-        hourly_excels       : Hourly excels required? True or False.
-        location            : Address of the folder where the output folder is
-                             to be created.
+        building_id         : (string/float)Building ID of the particular building.
+        thermal_profile     : (list)Thermal profile of the building.
+        electrical_profile  : (list)Electrical profile of the building.
+        global_radiation    : (list)Hourly global radiation values.
+        th_technologies     : (list)List of the thermal technologies to be considered.
+        el_technologies     : (list)List of the electrical technologies to be considered.
+        max_el_technologies : (int)Maximum number of electrical technologies to be considered.
+        min_el_technologies : (int)Minimum number of electrical technologies to be considered.
+        max_th_technologies : (int)Maximum number of thermal technologies to be considered.
+        min_th_technologies : (int)Minimum number of thermal technologies to be considered.
+        hourly_excels       : (bool)Hourly excels required? True or False.
+        location            : (string)Address of the folder where the output folder is to be created.
+        maxr_th_power       : (float)Maximum thermal capacity of the CHP in the presence of a peak load device.
+                              Is calculated according to maximum rectangle method.
+        peak_th_power       : (float)Peak thermal capacity needed to meet the demands of the consumer.
+        KPI                 : (List of tuples)KPI array containing the output data for the tool.
+        OnOffCHP            : (CHP class)Instance of the CHP class with ON/OFF operating strategy.
+        B                   : (Boiler class)Instance of boiler class
+        ElHe                : (Electric heater class)Instance of the electric heater class.
+        SolTh               : (Solar thermal class)Instance of the solar thermal class.
+        PV                  : (Photovoltaics class)Instance of the PV class.
+        ThSt                : (Thermal Storage class)Instance of the thermal storage class.
+        ElSt                : (Electric storage class)Instance of the electric storage class.
+        ElGrid              : (electric heater class)Instance of the electric grid glass.
     """
 
     def __init__(self, building_id,
@@ -52,6 +59,19 @@ class PreProcessingTool:
                  # min_th_technologies=1,
                  hourly_excels=True,
                  location='D:/aja-gmu/Simulation_Files/Output'):
+        """
+        Constructor class for the pre-processing tool
+
+        :param building_id: (string/float)Building ID of the particular building.
+        :param thermal_profile: (list)Thermal profile of the building.
+        :param electrical_profile: (list)Electrical profile of the building.
+        :param global_radiation: (list)Hourly global radiation values.
+        :param th_technologies: (list)List of the thermal technologies to be onsidered.
+        :param el_technologies: (list)List of the electrical technologies to be considered.
+        :param hourly_excels: (bool)Hourly excels required? True or False.
+        :param location: (string)Address of the folder where the output folder is to be created.
+        :return: none
+        """
         self.building_id = building_id
         self.thermal_profile = thermal_profile
         self.electrical_profile = electrical_profile
@@ -77,23 +97,24 @@ class PreProcessingTool:
 
     def generate_cases(self):
         """
-        Generates the scenarios with different energy supply systems
+        This is where the magic happens. Generates the scenarios with different energy supply systems and does all the
+        thermal and electrical calculations.
 
-        Args:
-            None.
-
-        Returns:
-            None.
+        :param: none
+        :return: none
         """
 
+        # change to the output folder
         os.chdir(self.location)
-        # Make the output folder if it does not exist
+
+        # Make the building folder if it does not exist
         if not os.path.exists(self.location+'/'+self.building_id):
             os.makedirs(self.location+'/'+self.building_id)
 
-        # Change to the folder
+        # Change to the building folder
         os.chdir(self.location+'/'+self.building_id)
-        # Delete all the old files and folders
+
+        # Delete all the old files and folders in the building directory
         for the_file in os.listdir(self.location+'/'+self.building_id):
             file_path = os.path.join(self.location+'/'+self.building_id,
                                      the_file)
@@ -102,7 +123,7 @@ class PreProcessingTool:
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
 
-        # Load thermal profile and weather data
+        # Total number of technologies
         technologies = list(set(self.th_technologies).
                             union(self.el_technologies))
 
@@ -110,13 +131,13 @@ class PreProcessingTool:
         # Iterating from 1 to the maximum number of technologies
         for number in range(1, len(technologies)+1):
 
-            # Change to the folder
+            # Change to the building folder
             os.chdir(self.location+'/'+self.building_id)
-            # Make separate directories depending on the number of technologies
-            # presenting the system
+            # Make separate sub-folders depending on the number of technologies presenting the system
             if (self.max_el_technologies + self.max_th_technologies-1 >= number >= self.min_el_technologies +
                     self.min_th_technologies-1) and self.hourly_excels:
 
+                # make sub-folders for different number of technologies
                 if not os.path.exists(str(number)+'technologies'):
                     os.makedirs(str(number)+'technologies')
 
@@ -130,44 +151,59 @@ class PreProcessingTool:
                 # Proceed further only if there is CHP present in the system
                 if 'CHP' in system:
 
-                    # Proceed further is the number of technologies in the
-                    # system are suitable
+                    # Proceed further is the number of technologies in the system are suitable
                     if (self.max_el_technologies >= len(set(system) &
                                                         set(self.el_technologies)) >= self.min_el_technologies and
                             self.max_th_technologies >= len(set(system) &
                                                             set(self.th_technologies)) >= self.min_th_technologies):
 
-                        # Create classes of the technologies
                         print '\n\n====================System-', system
 
+                        # ----------------------------------------------------------------------------------------------
+                        # Create excel for system.
                         # Create excel with the corresponding name
                         if self.hourly_excels:
                             excel = xlsxwriter.Workbook(self.get_system_name(system) + '.xls')
+
+                            # Generating different thermal and electrical priorities
                             for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
                                 for el_order in itertools.permutations(set(system) & set(self.el_technologies)):
+                                    # For each combo of thermal and electrical priority add a worksheet
                                     excel.add_worksheet(self.get_priority(th_order)+','+self.get_priority(el_order))
                             excel.close()
 
                         # ----------------------------------------------------------------------------------------------
-                        # Generating different thermal priorities for each
-                        # electrical priority and iterating through them
+                        # Calculations.
+                        # Generating different thermal and electrical priorities
                         for th_order in itertools.permutations(set(system) & set(self.th_technologies)):
                             for el_order in itertools.permutations(set(system) & set(self.el_technologies)):
-                                self.initialise_technologies(system)
-                                demand_satisfied = self.perform_calculations(th_order, el_order)
-                                if demand_satisfied:
-                                    self.update_kpi(system, th_order, el_order)
-                                    if self.hourly_excels:
+
+                                # Spells for the magic to happen
+                                self.initialise_technologies(system)  # Initialise the units of the system
+                                demand_satisfied = self.perform_calculations(th_order, el_order)  # Perform calculations
+                                if demand_satisfied:  # If system is successful in meeting the thermal demand
+                                    self.update_kpi(system, th_order, el_order)  # Update the KPI variable.
+                                    if self.hourly_excels:  # If hourly excels are required write data into them
                                         self.write_hourly_excel(self.get_system_name(system)+'.xls', th_order, el_order)
-        self.write_kpi_excel()
+        self.write_kpi_excel()  # After everything, write the KPI excel
         return
 
     def update_kpi(self, system, th_order, el_order):
+        """
+        Updates the KPI variable and stores information about the different systems and corresponding thermal and
+        electrical priorities.
+
+        :param system: (list)List containing the technologies in the system
+        :param th_order: (list)Thermal priority
+        :param el_order: (list)Electrical priority
+        :return: none
+        """
         total_annuity = 0
         total_emissions = 0
         total_pef = 0
         sc_percentage = 0
 
+        # calculate annuity and emissions for the technologies present in the system.
         if 'CHP' in system:
             if 'ThSt' in system:
                 self.OnOffCHP.set_annuity(storage=True)
@@ -203,6 +239,7 @@ class PreProcessingTool:
             total_annuity += self.PV.annuity
             total_emissions += self.PV.emissions
 
+        # Append to the KPI variable.
         self.KPI.append([self.get_system_name(system),
                          self.get_priority(th_order),
                          self.get_priority(el_order),
@@ -234,6 +271,13 @@ class PreProcessingTool:
 
     @staticmethod
     def get_maxr(thermal_profile):
+        """
+        Returns capacity calculated according to maximum rectangle method. Is used in dimensioning the CHP unit in the
+        presence of a peak load device.
+
+        :param thermal_profile: (list)Thermal profile of the building.
+        :return: none
+        """
         # Sort thermal demand in decreasing order for the load distribution
         # curve
         thermal_profile = sorted(thermal_profile, reverse=True)
@@ -251,6 +295,12 @@ class PreProcessingTool:
         return thermal_profile[hours], hours
 
     def initialise_technologies(self, system):
+        """
+        Initialise required technologies according to the system passed to it.
+
+        :param system: (list)List of technologies present in the system.
+        :return: none
+        """
         # ---------------------------------------------------------------------
         # CHP
         # If CHP is present, it will check for a peak load device. If peak load
@@ -318,10 +368,18 @@ class PreProcessingTool:
         return
 
     def perform_calculations(self, th_order, el_order):
+        """
+        Performs the thermal and electrical calculations.
+
+        :param th_order: (list)Thermal priority list
+        :param el_order: (list)Electrical priority list
+        :return: none
+        """
         print th_order, el_order
+
         for i in range(0, 8760):
-            q_hourly = self.thermal_profile[i]
-            if 'ThSt' in th_order:
+            q_hourly = self.thermal_profile[i]  # Hourly thermal demand
+            if 'ThSt' in th_order:  # Thermal loss in the thermal storage
                 self.ThSt.apply_losses(i)
 
             # Meeting the thermal demand
@@ -345,8 +403,8 @@ class PreProcessingTool:
             if q_hourly != 0:
                 return False
 
-            p_hourly = self.electrical_profile[i]
-            if 'ElHe' in th_order:
+            p_hourly = self.electrical_profile[i]  # Hourly electrical demand
+            if 'ElHe' in th_order:  # Adding electrical heater production to the electrical demand.
                 p_hourly += self.ElHe.heat_hourly[i]
             # Meeting the electrical demand
             for technology in el_order:
@@ -368,6 +426,14 @@ class PreProcessingTool:
         return True
 
     def write_hourly_excel(self, workbook_name, th_order, el_order):
+        """
+        Writes hourly data into the excel sheet.
+
+        :param workbook_name: (string)String containing the name of the excel sheet
+        :param th_order: (list)Thermal priority
+        :param el_order: (list)Electrical priority
+        :return: none
+        """
         # ---------------------------------------------------------------------
         # write all values into the worksheet
         worksheet_name = self.get_priority(th_order)+','+self.get_priority(el_order)
@@ -470,8 +536,10 @@ class PreProcessingTool:
     @staticmethod
     def get_system_name(system):
         """
-        :param system: set of technologies in system
-        :return: system_name : set of technologies in system- suitably formatted for excel workbook naming
+        Concatenates the name of the technologies and generates the system name for excel workbook naming
+
+        :param system: (list)set of technologies in system
+        :return: system_name : (list)set of technologies in system- suitably formatted for excel workbook naming
         """
         system_name = ''
         count = 1
@@ -486,8 +554,10 @@ class PreProcessingTool:
     @staticmethod
     def get_priority(order):
         """
-        :param order: set of technologies in thermal or electrical priority
-        :return: priority : set of technologies in priority list- suitably formatted for excel worksheet naming
+        Returns the priority list suitably formatted for excel worksheet naming
+
+        :param order: (list)set of technologies in thermal or electrical priority
+        :return: priority : (list)set of technologies in priority list- suitably formatted for excel worksheet naming
         """
         priority = ''
         count = 1
@@ -501,12 +571,15 @@ class PreProcessingTool:
 
     def write_kpi_excel(self):
         """
+        Writes data into the KPI excel.
+
         :param: none
         :return: none
         """
+        # Change to building directory
         os.chdir(self.location+'/'+self.building_id)
-        excel = xlsxwriter.Workbook(self.building_id+'.xls')
-        worksheet = excel.add_worksheet('Thermal Profile')
+        excel = xlsxwriter.Workbook(self.building_id+'.xls')  # Create excel
+        worksheet = excel.add_worksheet('Thermal Profile')  # Insert thermal profile of the building in the first sheet
         for row in range(0, len(self.thermal_profile)):
             worksheet.write(row, 0, row)
             worksheet.write(row, 1, self.thermal_profile[row])
@@ -534,6 +607,7 @@ class PreProcessingTool:
         # Insert the chart into the worksheet.
         worksheet.insert_chart('D4', chart)
 
+        # Second sheet with all the systems, thermal priorities and electrical priorities.
         worksheet = excel.add_worksheet('KPI')
         worksheet.write(0, 0, 'System')
         worksheet.write(0, 1, 'Thermal Priority')

@@ -108,7 +108,7 @@ def get_thst_capacity(required_capacity):
 
     # If required capacity is large, custom made?
     if required_capacity > 2000:
-        model = ('Big storage', change_litres_to_kwh(required_capacity))
+        model = ('Big storage', change_litres_to_kwh(required_capacity), 1.0)
     return model
 
 
