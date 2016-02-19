@@ -86,15 +86,23 @@ class UiMainWindow(object):
         self.line_edit_output_folder = QtGui.QLineEdit(self.widget)
         self.line_edit_output_folder.setCursorMoveStyle(QtCore.Qt.LogicalMoveStyle)
         self.line_edit_output_folder.setObjectName("line_edit_output_folder")
+        self.line_edit_output_folder.setText("D:/aja-gmu/Simulation_Files/Output")
+
         self.verticalLayout_2.addWidget(self.line_edit_output_folder)
         self.line_edit_weather = QtGui.QLineEdit(self.widget)
         self.line_edit_weather.setObjectName("line_edit_weather")
+        self.line_edit_weather.setText("D:/aja-gmu/Simulation_Files/Wetter_Bottrop_Modelica.csv")
+
         self.verticalLayout_2.addWidget(self.line_edit_weather)
         self.line_edit_heat_profiles = QtGui.QLineEdit(self.widget)
         self.line_edit_heat_profiles.setObjectName("line_edit_heat_profiles")
+        self.line_edit_heat_profiles.setText("D:/aja-gmu/Simulation_Files/Heat profiles.xlsx")
+
         self.verticalLayout_2.addWidget(self.line_edit_heat_profiles)
         self.line_edit_electrical_profiles = QtGui.QLineEdit(self.widget)
         self.line_edit_electrical_profiles.setObjectName("line_edit_electrical_profiles")
+        self.line_edit_electrical_profiles.setText("D:/aja-gmu/Simulation_Files/Heat profiles.xlsx")
+
         self.verticalLayout_2.addWidget(self.line_edit_electrical_profiles)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
@@ -118,6 +126,7 @@ class UiMainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
+
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Welcome to the SGT UI", None, QtGui.QApplication.UnicodeUTF8))
         self.label1.setText(QtGui.QApplication.translate("MainWindow", "Choose technologies that can be present in the system:", None, QtGui.QApplication.UnicodeUTF8))
         self.check_box_chp.setText(QtGui.QApplication.translate("MainWindow", "CHP", None, QtGui.QApplication.UnicodeUTF8))

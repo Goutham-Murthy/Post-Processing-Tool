@@ -1,24 +1,14 @@
 # -*- coding: utf-8 -*-
-from xlrd import open_workbook
-from xlutils.copy import copy
 import os
 import itertools
 import xlsxwriter
 import shutil
-import CHP
-import boiler
-import electricheater
-import thermalstorage
-import solarthermal
-import photovoltaics
-import electricalstorage
-# import heatpump
-import electricalgrid
-import database
+import supplysystem
 
 
 class PreProcessingTool:
-    """PreProcessingTool
+    """
+    PreProcessingTool
 
     Attributes:
         building_id         : Building ID of the particular building.
@@ -37,14 +27,6 @@ class PreProcessingTool:
                               Is calculated according to maximum rectangle method.
         peak_th_power       : Peak thermal capacity needed to meet the demands of the consumer.
         KPI                 : KPI array containing the output data for the tool.
-        OnOffCHP            : Instance of the CHP class with ON/OFF operating strategy.
-        B                   : Instance of boiler class
-        ElHe                : Instance of the electric heater class.
-        SolTh               : Instance of the solar thermal class.
-        PV                  : Instance of the PV class.
-        ThSt                : Instance of the thermal storage class.
-        ElSt                : Instance of the electric storage class.
-        ElGrid              : Instance of the electric grid glass.
     """
 
     def __init__(self, building_id,
@@ -179,12 +161,23 @@ class PreProcessingTool:
                             for el_order in itertools.permutations(set(system) & set(self.el_technologies)):
 
                                 # Spells for the magic to happen
-                                self.initialise_technologies(system)  # Initialise the units of the system
-                                demand_satisfied = self.perform_calculations(th_order, el_order)  # Perform calculations
+                                # Initialise system
+                                self.supply_system = supplysystem.SupplySystem(th_order= th_order, el_order=el_order,
+                                                                               peak_th_power=self.peak_th_power,
+                                                                               maxr_th_power=self.maxr_th_power,
+                                                                               global_radiation=self.global_radiation)
+                                demand_satisfied = self.supply_system.perform_calculations(
+                                                    thermal_profile=self.thermal_profile,
+                                                    electrical_profile=self.electrical_profile)  # Perform calculations
+
                                 if demand_satisfied:  # If system is successful in meeting the thermal demand
                                     self.update_kpi(system, th_order, el_order)  # Update the KPI variable.
                                     if self.hourly_excels:  # If hourly excels are required write data into them
-                                        self.write_hourly_excel(self.get_system_name(system)+'.xls', th_order, el_order)
+                                        self.supply_system.write_hourly_excel(workbook_name=self.get_system_name(system)+'.xls',
+                                                                              worksheet_name=self.get_priority(th_order)+','+self.get_priority(el_order),
+                                                                              thermal_profile=self.thermal_profile,
+                                                                              electrical_profile=self.electrical_profile
+                                                                              )
         self.write_kpi_excel()  # After everything, write the KPI excel
         return
 
@@ -198,76 +191,37 @@ class PreProcessingTool:
         :param el_order: Electrical priority
         :return: none
         """
-        total_annuity = 0
-        total_emissions = 0
-        total_pef = 0
-        sc_percentage = 0
-
-        # calculate annuity and emissions for the technologies present in the system.
-        if 'CHP' in system:
-            if 'ThSt' in system:
-                self.OnOffCHP.set_annuity(storage=True)
-            else:
-                self.OnOffCHP.set_annuity()
-            self.OnOffCHP.set_emissions()
-            total_annuity += self.OnOffCHP.annuity
-            total_emissions += self.OnOffCHP.emissions
-
-        if 'B' in system:
-            self.B.set_annuity()
-            self.B.set_emissions()
-            total_annuity += self.B.annuity
-            total_emissions += self.B.emissions
-
-        if 'ElHe' in system:
-            self.ElHe.set_annuity()
-            self.ElHe.set_emissions()
-            total_annuity += self.ElHe.annuity
-            total_emissions += self.ElHe.emissions
-
-        if 'ThSt' in system:
-            self.ThSt.set_annuity()
-            total_annuity += self.ThSt.annuity
-
-        if 'SolTh' in system:
-            self.SolTh.set_annuity()
-            total_annuity += self.SolTh.annuity
-
-        if 'PV' in system:
-            self.PV.set_annuity()
-            self.PV.set_emissions()
-            total_annuity += self.PV.annuity
-            total_emissions += self.PV.emissions
+        self.supply_system.calculate_kpi()
 
         # Append to the KPI variable.
         self.KPI.append([self.get_system_name(system),
                          self.get_priority(th_order),
                          self.get_priority(el_order),
-                         total_annuity,
-                         total_emissions,
-                         total_pef,
-                         self.ThSt.losses if 'ThSt' in system else 0,
-                         self.OnOffCHP.th_capacity if 'CHP' in system else 0,
-                         self.OnOffCHP.heat_yearly if 'CHP' in system else 0,
+                         self.supply_system.total_annuity,
+                         self.supply_system.total_emissions,
+                         self.supply_system.total_pef,
+                         self.supply_system.ThSt.losses if 'ThSt' in system else 0,
+                         self.supply_system.OnOffCHP.th_capacity if 'CHP' in system else 0,
+                         self.supply_system.OnOffCHP.heat_yearly if 'CHP' in system else 0,
                          0,
                          0,
-                         self.B.th_capacity if 'B' in system else 0,
-                         self.B.heat_yearly if 'B' in system else 0,
-                         self.ThSt.th_capacity if 'ThSt' in system else 0,
-                         self.ThSt.heat_stored[8760] if 'ThSt' in system else 0,
-                         self.SolTh.area if 'SolTh' in system else 0,
-                         self.SolTh.heat_yearly if 'SolTh' in system else 0,
-                         self.ElHe.th_capacity if 'ElHe' in system else 0,
-                         self.ElHe.heat_yearly if 'ElHe' in system else 0,
-                         self.PV.area if 'PV' in system else 0,
-                         self.PV.electricity_yearly if 'PV' in system else 0,
-                         self.OnOffCHP.annuity if 'CHP' in system else 0,
-                         self.B.annuity if 'B' in system else 0,
-                         self.ThSt.annuity if 'ThSt' in system else 0,
-                         self.SolTh.annuity if 'SolTh' in system else 0,
-                         self.ElHe.annuity if 'ElHe' in system else 0,
-                         self.PV.annuity if 'PV' in system else 0,
-                         sc_percentage])
+                         self.supply_system.B.th_capacity if 'B' in system else 0,
+                         self.supply_system.B.heat_yearly if 'B' in system else 0,
+                         self.supply_system.ThSt.th_capacity if 'ThSt' in system else 0,
+                         self.supply_system.ThSt.heat_stored[8760] if 'ThSt' in system else 0,
+                         self.supply_system.SolTh.area if 'SolTh' in system else 0,
+                         self.supply_system.SolTh.heat_yearly if 'SolTh' in system else 0,
+                         self.supply_system.ElHe.th_capacity if 'ElHe' in system else 0,
+                         self.supply_system.ElHe.heat_yearly if 'ElHe' in system else 0,
+                         self.supply_system.PV.area if 'PV' in system else 0,
+                         self.supply_system.PV.electricity_yearly if 'PV' in system else 0,
+                         self.supply_system.OnOffCHP.annuity if 'CHP' in system else 0,
+                         self.supply_system.B.annuity if 'B' in system else 0,
+                         self.supply_system.ThSt.annuity if 'ThSt' in system else 0,
+                         self.supply_system.SolTh.annuity if 'SolTh' in system else 0,
+                         self.supply_system.ElHe.annuity if 'ElHe' in system else 0,
+                         self.supply_system.PV.annuity if 'PV' in system else 0,
+                         0])
 
     @staticmethod
     def get_maxr(thermal_profile):
@@ -293,245 +247,6 @@ class PreProcessingTool:
                 hours = k
         # print maxr, hours, thermal_profile[hours]
         return thermal_profile[hours], hours
-
-    def initialise_technologies(self, system):
-        """
-        Initialise required technologies according to the system passed to it.
-
-        :param system: List of technologies present in the system.
-        :return: none
-        """
-        # ---------------------------------------------------------------------
-        # CHP
-        # If CHP is present, it will check for a peak load device. If peak load
-        # device is present, CHP is sized according to maximum rectangle
-        # method. Otherwise it is sized according to peak thermal load.
-        if 'CHP' in system and 'ElHe' not in system and 'B'not in system:
-            self.OnOffCHP = CHP.OnOffCHP(database.get_chp_capacity(self.peak_th_power))
-        if 'CHP' in system and ('ElHe' in system or 'B' in system):
-            self.OnOffCHP = CHP.OnOffCHP(database.get_chp_capacity(self.maxr_th_power))
-
-        # ---------------------------------------------------------------------
-        # Boiler
-        # If boiler is present, dimension it to peak thermal demand
-        if 'B' in system:
-            self.B = boiler.Boiler(database.get_b_capacity(self.peak_th_power))
-
-        # ---------------------------------------------------------------------
-        # Electric Resistance Heater
-        # If electric heater is present, dimension it to peak thermal demand
-        if 'ElHe' in system:
-            self.ElHe = electricheater.ElectricHeater('Electric Heater Model',
-                                                      database.get_elhe_capacity(self.peak_th_power))
-
-        # ---------------------------------------------------------------------
-        # Thermal Storage
-        # If thermal storage is present, dimension it according to CHP
-        # capacity.
-        if 'ThSt' in system:
-            self.ThSt = thermalstorage.ThermalStorage(database.get_thst_capacity(3*self.OnOffCHP.th_capacity))
-
-        # ---------------------------------------------------------------------
-        # Solar Thermal
-        # If Solar thermal is present, dimension according to roof area
-        if 'SolTh' in system and 'PV' not in system:
-            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(10),
-                                                   self.global_radiation)
-        if 'SolTh' in system and 'PV' in system:
-            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(5),
-                                                   self.global_radiation)
-
-        # ---------------------------------------------------------------------
-        # Photovoltaics
-        # If PV is present, dimension according to roof area
-        if 'PV' in system and 'SolTh' not in system:
-            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(10),
-                                                  self.global_radiation)
-        if 'PV' in system and 'SolTh' in system:
-            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(5),
-                                                  self.global_radiation)
-
-        # ---------------------------------------------------------------------
-        # Electrical Storage
-        # Dimension logic to be implemented
-        if 'ElSt' in system:
-            self.ElSt = electricalstorage.ElectricalStorage('Model', 1000, 1)
-
-        # ---------------------------------------------------------------------
-        # HeatPump
-
-        # ---------------------------------------------------------------------
-        # Electrical Grid
-        # Initialising electrical grid
-        self.ElGrid = electricalgrid.ElectricalGrid()
-
-        return
-
-    def perform_calculations(self, th_order, el_order):
-        """
-        Performs the thermal and electrical calculations.
-
-        :param th_order: Thermal priority list
-        :param el_order: Electrical priority list
-        :return: none
-        """
-        print th_order, el_order
-
-        for i in range(0, 8760):
-            q_hourly = self.thermal_profile[i]  # Hourly thermal demand
-            if 'ThSt' in th_order:  # Thermal loss in the thermal storage
-                self.ThSt.apply_losses(i)
-
-            # Meeting the thermal demand
-            for technology in th_order:
-                if technology is 'CHP' and q_hourly > 0:
-                    if 'ThSt' in th_order:
-                        q_hourly = self.OnOffCHP.get_heat(q_hourly, i,
-                                                          self.ThSt)
-                    else:
-                        q_hourly = self.OnOffCHP.get_heat(q_hourly, i)
-                if technology is 'B' and q_hourly > 0:
-                    q_hourly = self.B.get_heat(q_hourly, i)
-                if technology is 'ElHe' and q_hourly > 0:
-                    q_hourly = self.ElHe.get_heat(q_hourly, i)
-                if technology is 'ThSt' and q_hourly > 0:
-                    q_hourly = self.ThSt.get_heat(q_hourly, i)
-                # if technology is 'HP' and q_hourly > 0:
-                #   q_hourly = self.HP.get_heat(q_hourly, i)
-                if technology is 'SolTh' and q_hourly > 0:
-                    q_hourly = self.SolTh.get_heat(q_hourly, i)
-            if q_hourly != 0:
-                return False
-
-            p_hourly = self.electrical_profile[i]  # Hourly electrical demand
-            if 'ElHe' in th_order:  # Adding electrical heater production to the electrical demand.
-                p_hourly += self.ElHe.heat_hourly[i]
-            # Meeting the electrical demand
-            for technology in el_order:
-                if technology is 'PV' and p_hourly > 0:
-                    if 'ElSt' in el_order:
-                        p_hourly = self.PV.get_electricity(p_hourly, i, self.ElSt)
-                    else:
-                        p_hourly = self.PV.get_electricity(p_hourly, i)
-                if technology is 'CHP' and p_hourly > 0:
-                    if 'ElSt' in el_order:
-                        p_hourly = self.OnOffCHP.get_electricity(p_hourly, i, self.ElSt)
-                    else:
-                        p_hourly = self.OnOffCHP.get_electricity(p_hourly, i)
-                if technology is 'ElSt' and p_hourly > 0:
-                    p_hourly = self.ElSt.get_electricity(p_hourly, i)
-                # If electrical demand is not met, take electricity from the grid.
-                if p_hourly > 0:
-                    self.ElGrid.get_electricity(p_hourly, i)
-        return True
-
-    def write_hourly_excel(self, workbook_name, th_order, el_order):
-        """
-        Writes hourly data into the excel sheet.
-
-        :param workbook_name: String containing the name of the excel sheet
-        :param th_order: Thermal priority
-        :param el_order: Electrical priority
-        :return: none
-        """
-        # ---------------------------------------------------------------------
-        # write all values into the worksheet
-        worksheet_name = self.get_priority(th_order)+','+self.get_priority(el_order)
-        workbook = open_workbook(workbook_name, worksheet_name)
-        idx = workbook.sheet_names().index(worksheet_name)
-        workbook = copy(workbook)
-        worksheet = workbook.get_sheet(idx)
-        worksheet.write(0, 0, 'Hour')
-        worksheet.write(0, 1, 'Hourly Thermal Demand')
-        count = 2
-        for technology in th_order:
-            if technology is 'CHP':
-                worksheet.write(0, count, 'CHP Production')
-            elif technology is 'B':
-                worksheet.write(0, count, 'Boiler Production')
-            elif technology is 'ElHe':
-                worksheet.write(0, count, 'Electrical Resistance Heater Production')
-            elif technology is 'ThSt':
-                worksheet.write(0, count, 'Heat stored in Thermal Storage')
-                count += 1
-                worksheet.write(0, count, 'Heat provided by thermal Storage')
-            # elif technology is 'HP':
-            #    worksheet.write(0, count, 'Heat Pump Production')
-            elif technology is 'SolTh':
-                worksheet.write(0, count, 'Solar Thermal Production')
-            count += 1
-
-        for i in range(0, 8760):
-            worksheet.write(i+1, 0, i)
-            worksheet.write(i+1, 1, self.thermal_profile[i])
-            count = 2
-            for technology in th_order:
-                if technology is 'CHP':
-                    worksheet.write(i+1, count, self.OnOffCHP.heat_hourly[i])
-                elif technology is 'B':
-                    worksheet.write(i+1, count, self.B.heat_hourly[i])
-                elif technology is 'ElHe':
-                    worksheet.write(i+1, count, self.ElHe.heat_hourly[i])
-                elif technology is 'ThSt':
-                    worksheet.write(i+1, count, self.ThSt.heat_stored[i])
-                    count += 1
-                    worksheet.write(i+1, count, self.ThSt.heat_given[i])
-                # elif technology is 'HP':
-                #    worksheet.write(i+1, count, self.HP.heat_hourly[i])
-                elif technology is 'SolTh':
-                    worksheet.write(i+1, count, self.SolTh.heat_hourly[i])
-                count += 1
-
-        if 'ThSt' in th_order:
-            count = 3 + len(th_order)
-        else:
-            count = 2 + len(th_order)
-        worksheet.write(0, count, 'Hourly Electrical Demand')
-        count += 1
-        for technology in el_order:
-            if technology is 'CHP':
-                worksheet.write(0, count, 'CHP Electricity Production')
-                count += 1
-                worksheet.write(0, count, 'CHP Exported Electricity')
-            elif technology is 'PV':
-                worksheet.write(0, count, 'PV Production')
-                count += 1
-                worksheet.write(0, count, 'PV Exported Electricity')
-            # elif technology is 'HP':
-            #    worksheet.write(0, count, 'HP electricity Consumption')
-            elif technology is 'ElSt':
-                worksheet.write(0, count, 'Electricity stored in electrical storage')
-                count += 1
-                worksheet.write(0, count, 'Electricity provided by electrical storage')
-            count += 1
-        worksheet.write(0, count, 'Electricity Grid Production')
-
-        for i in range(0, 8760):
-            if 'ThSt' in th_order:
-                count = 3 + len(th_order)
-            else:
-                count = 2 + len(th_order)
-            worksheet.write(i+1, count, self.electrical_profile[i])
-            count += 1
-            for technology in el_order:
-                if technology is 'CHP':
-                    worksheet.write(i+1, count, self.OnOffCHP.electricity_hourly[i])
-                    count += 1
-                    worksheet.write(i+1, count, self.OnOffCHP.electricity_hourly_exported[i])
-                elif technology is 'PV':
-                    worksheet.write(i+1, count, self.PV.electricity_hourly[i])
-                    count += 1
-                    worksheet.write(i+1, count, self.PV.electricity_hourly_exported[i])
-                # elif technology is 'HP':
-                #    worksheet.write(i+1, count, self.HP.electricity_hourly[i])
-                elif technology is 'ElSt':
-                    worksheet.write(i+1, count, self.ElSt.electricity_stored[i])
-                    count += 1
-                    worksheet.write(i+1, count, self.ElSt.electricity_given[i])
-                count += 1
-            worksheet.write(i+1, count, self.ElGrid.electricity_hourly[i])
-
-        workbook.save(workbook_name)
 
     @staticmethod
     def get_system_name(system):
@@ -579,10 +294,18 @@ class PreProcessingTool:
         # Change to building directory
         os.chdir(self.location+'/'+self.building_id)
         excel = xlsxwriter.Workbook(self.building_id+'.xls')  # Create excel
-        worksheet = excel.add_worksheet('Thermal Profile')  # Insert thermal profile of the building in the first sheet
-        for row in range(0, len(self.thermal_profile)):
+
+        # Insert thermal profile and electrical profile of the building in the first sheet
+        worksheet = excel.add_worksheet('Th and El Profiles')
+
+        worksheet.write(0, 0, 'Hour')
+        worksheet.write(0, 1, 'Thermal Profile')
+        worksheet.write(0, 2, 'Electrical Profile')
+
+        for row in range(1, len(self.thermal_profile)):
             worksheet.write(row, 0, row)
             worksheet.write(row, 1, self.thermal_profile[row])
+            worksheet.write(row, 2, self.electrical_profile[row])
 
         # Create a new Chart object.
         chart = excel.add_chart({'type': 'line'})
@@ -594,16 +317,20 @@ class PreProcessingTool:
                          })
 
         chart.set_y_axis({
-                         'name': 'Thermal Demand in kWh',
+                         'name': 'Demand in kWh',
                          'name_font': {'size': 10, 'bold': True}
                          })
 
-        chart.set_title({'name': 'Thermal Load Profile'})
+        chart.set_title({'name': 'Thermal and Electrical Load Profile'})
 
-        # Configure the chart.
-        chart.add_series({'values': ['Thermal Profile', 0, 1, 8760, 1],
-                          'categories': ['Thermal Profile', 0, 0, 8760, 0]})
-        chart.set_legend({'none': True})
+        # Configure the chart. [sheet_name, first_row, first_col, last_row, last_col]
+        chart.add_series({'values': ['Th and El Profiles', 1, 1, 8761, 1],
+                          'categories': ['Th and El Profiles', 1, 1, 8761, 1],
+                          'name': 'Thermal Profile'})
+        chart.add_series({'values': ['Th and El Profiles', 1, 2, 8761, 2],
+                          'categories': ['Th and El Profiles', 1, 2, 8761, 2],
+                          'name': 'Electrical Profile'})
+        # chart.set_legend({'none': True})
         # Insert the chart into the worksheet.
         worksheet.insert_chart('D4', chart)
 

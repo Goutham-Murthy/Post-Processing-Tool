@@ -27,7 +27,6 @@ class ControlMainWindow(QtGui.QMainWindow):
         super(ControlMainWindow, self).__init__(parent)
         self.ui = gui.UiMainWindow()
         self.ui.setup_gui(self)
-
         self.ui.buttonBox.accepted.connect(self.process_data)
         self.ui.buttonBox.rejected.connect(self.reset_all)
         self.ui.btn_output_folder.clicked.connect(self.get_output_folder)
@@ -47,12 +46,12 @@ class ControlMainWindow(QtGui.QMainWindow):
         """
         # Get the list of thermal and electrical technologies to be analyzed.
         self.get_technologies()
-        self.worker_thread = WorkerThread(output_folder_name=self.output_folder_name,
-                                          weather_file=self.weather_file,
+        self.worker_thread = WorkerThread(output_folder_name=self.ui.line_edit_output_folder.text(),
+                                          weather_file=self.ui.line_edit_weather.text(),
                                           th_technologies=self.th_technologies,
                                           el_technologies=self.el_technologies,
-                                          heat_profiles_file=self.heat_profiles_file,
-                                          electrical_profiles_file=self.electrical_profiles_file,
+                                          heat_profiles_file=self.ui.line_edit_heat_profiles.text(),
+                                          electrical_profiles_file=self.ui.line_edit_electrical_profiles.text(),
                                           hourly_excels=self.hourly_excels)
         self.connect(self.worker_thread, QtCore.SIGNAL("threadDone(QString)"), self.test_func,
                      QtCore.Qt.DirectConnection)
@@ -128,7 +127,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         dialog.setFileMode(QtGui.QFileDialog.Directory)
         dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
         self.output_folder_name = dialog.getExistingDirectory(dialog, 'Choose Directory', os.path.curdir)
-        self.ui.line_edit_output_folder.insert(self.output_folder_name)
+        self.ui.line_edit_output_folder.setText(self.output_folder_name)
         return
 
     def get_weather_file(self):
@@ -142,7 +141,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         # self.weather_file_location = dialog.getExistingDirectory(dialog, 'Choose Directory', os.path.curdir)
         self.weather_file, discard = dialog.getOpenFileName(caption="Choose TRY weather File",
                                                             filter=".csv files(*.csv)")
-        self.ui.line_edit_weather.insert(self.weather_file)
+        self.ui.line_edit_weather.setText(self.weather_file)
         return
 
     def get_electrical_profiles(self):
@@ -156,7 +155,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         self.electrical_profiles_file, \
             discard = dialog.getOpenFileName(caption="Choose file with electrical profiles",
                                              filter="Excel files(*.xlsx *.xls)")
-        self.ui.line_edit_electrical_profiles.insert(self.electrical_profiles_file)
+        self.ui.line_edit_electrical_profiles.setText(self.electrical_profiles_file)
         return
 
     def get_heat_profiles(self):
@@ -171,7 +170,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         self.heat_profiles_file, discard = dialog.getOpenFileName(caption="Choose file with heat profiles",
                                                                   filter="Excel files(*.xlsx *.xls)",
                                                                   )
-        self.ui.line_edit_heat_profiles.insert(self.heat_profiles_file)
+        self.ui.line_edit_heat_profiles.setText(self.heat_profiles_file)
         return
 
 
