@@ -143,8 +143,7 @@ class SupplySystem:
             for technology in self.th_order:
                 if technology is 'CHP' and q_hourly > 0:
                     if 'ThSt' in self.th_order:
-                        q_hourly = self.OnOffCHP.get_heat(q_hourly, i,
-                                                          self.ThSt)
+                        q_hourly = self.OnOffCHP.get_heat(q_hourly, i, self.ThSt)
                     else:
                         q_hourly = self.OnOffCHP.get_heat(q_hourly, i)
                 if technology is 'B' and q_hourly > 0:
@@ -190,6 +189,7 @@ class SupplySystem:
             else:
                 self.OnOffCHP.set_annuity()
             self.OnOffCHP.set_emissions()
+            self.OnOffCHP.set_hours_on_count()
             self.total_annuity += self.OnOffCHP.annuity
             self.total_emissions += self.OnOffCHP.emissions
 
