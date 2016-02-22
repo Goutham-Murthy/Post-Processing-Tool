@@ -212,7 +212,8 @@ class CHP(annuity.Annuity):
                                                    ElSt.get_availability(hour))
                 ElSt.store_electricity(possible_electricity_storage, hour)
                 required_electricity = 0
-                self.electricity_hourly_exported[hour] = self.electricity_hourly[hour] - possible_electricity_storage
+                self.electricity_hourly_exported[hour] = (self.electricity_hourly[hour] - possible_electricity_storage -
+                                                          required_electricity)
             else:
                 required_electricity -= self.electricity_hourly[hour]
         else:
@@ -298,37 +299,70 @@ class ModCHP(CHP):
         """
         minimum_chp_capacity = 0.3 * self.th_capacity
         if ThSt is not None:
-            if required_heat < self.th_capacity:
-
-                if (minimum_chp_capacity - required_heat) <= ThSt.get_availability(hour):
-                    # Excess heat can be stored in the storage unit.
-                    # Check for availability of thermal storage unit.
-                    if (minimum_chp_capacity - required_heat) <= ThSt.get_availability(hour):
-                        ThSt.store_heat((minimum_chp_capacity - required_heat))
-                        required_heat = 0
-                        self.heat_yearly += minimum_chp_capacity
-                        self.heat_hourly[hour] = minimum_chp_capacity
-                    # If storage is unavailable, do not switch on.
-
-                else:
-
-                    ThSt.store_heat((self.th_capacity - required_heat), hour)
+            if minimum_chp_capacity <= required_heat < self.th_capacity:
+                chp_operation_point = math.ceil((required_heat / self.th_capacity) * 10) / 10 * self.th_capacity
+                # Check availability of storage
+                if (chp_operation_point - required_heat) <= ThSt.get_availability(hour):
+                    ThSt.store_heat(chp_operation_point - required_heat, hour)
+                    self.heat_yearly += chp_operation_point
+                    self.heat_hourly[hour] = chp_operation_point
                     required_heat = 0
-                    self.heat_yearly += self.th_capacity
-                    self.heat_hourly[hour] = self.th_capacity
-                # If not available, do nothing.
-            else:
+                else:
+                    chp_operation_point = math.floor((required_heat / self.th_capacity) * 10) / 10 * self.th_capacity
+                    self.heat_yearly += chp_operation_point
+                    self.heat_hourly[hour] = chp_operation_point
+                    required_heat -= chp_operation_point
+            elif required_heat >= self.th_capacity:
                 self.heat_yearly += self.th_capacity
                 self.heat_hourly[hour] = self.th_capacity
                 required_heat -= self.th_capacity
-            # If thermal demand is greater than capacity meet it as much as
-            # possible.
         else:
-            if required_heat < self.th_capacity:
-                self.heat_hourly[hour] = 0
-            else:
+            if minimum_chp_capacity <= required_heat < self.th_capacity:
+                chp_operation_point = math.floor((required_heat / self.th_capacity) * 10) / 10 * self.th_capacity
+                self.heat_yearly += chp_operation_point
+                self.heat_hourly[hour] = chp_operation_point
+                required_heat -= chp_operation_point
+            elif required_heat >= self.th_capacity:
                 self.heat_yearly += self.th_capacity
                 self.heat_hourly[hour] = self.th_capacity
                 required_heat -= self.th_capacity
+        return required_heat
+
+
+class ConCHP(CHP):
+    """
+    Class for continuous CHP
+
+    Attributes:
+    Extends:
+        CHP class
+    """
+
+    def get_heat(self, required_heat, hour, ThSt=None):
+        """
+        Given the required heat, function calculates the hourly heat met by the CHP and returns the value for
+        unsatisfied thermal demand.
+
+        :param required_heat: Hourly thermal demand [kWh].
+        :param hour: Hour of the year[hour].
+        :param ThSt: Thermal Storage instance when present.
+        :return: required_heat: Hourly thermal demand not met by the CHP unit [kWh].
+        """
+        minimum_chp_capacity = 0.3 * self.th_capacity
+        if required_heat < minimum_chp_capacity and ThSt is not None:
+            # Check for availability of storage
+            if (minimum_chp_capacity - required_heat) <= ThSt.get_availability(hour):
+                ThSt.store_heat(minimum_chp_capacity - required_heat, hour)
+                self.heat_yearly += minimum_chp_capacity
+                self.heat_hourly[hour] = minimum_chp_capacity
+                required_heat = 0
+        elif minimum_chp_capacity <= required_heat < self.th_capacity:
+            self.heat_yearly += required_heat
+            self.heat_hourly[hour] = required_heat
+            required_heat = 0
+        elif required_heat >= self.th_capacity:
+            self.heat_yearly += self.th_capacity
+            self.heat_hourly[hour] = self.th_capacity
+            required_heat -= self.th_capacity
         return required_heat
 

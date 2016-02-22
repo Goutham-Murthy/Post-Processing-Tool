@@ -32,6 +32,7 @@ class ElectricHeater(annuity.Annuity):
         # Initialising other variables to zero.
         self.heat_hourly = [0]*8760
         self.heat_yearly = 0
+        self.imported_electricity = 0
         self.annuity = 0
         self.emissions = 0
         super(ElectricHeater, self).__init__(deperiod=15, effop=5, fwins=1,

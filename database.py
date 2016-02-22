@@ -23,15 +23,15 @@ CHP_database = {
 # Key              : Value
 # thermal capacity : {model name, thermal capacity(kW), thermal efficiency}
 B_database = {
-                11: ('Boiler_Vitogas200F_11kW', 11, 0.98),
-                15: ('Boiler_Vitogas200F_15kW', 15, 0.98),
-                18: ('Boiler_Vitogas200F_18kW', 18, 0.98),
-                22: ('Boiler_Vitogas200F_22kW', 22, 0.98),
-                29: ('Boiler_Vitogas200F_29kW', 29, 0.98),
-                35: ('Boiler_Vitogas200F_35kW', 35, 0.98),
-                42: ('Boiler_Vitogas200F_42kW', 42, 0.98),
-                48: ('Boiler_Vitogas200F_48kW', 48, 0.98),
-                60: ('Boiler_Vitogas200F_60kW', 60, 0.98)
+                11: ('Boiler_Vitogas200F_11kW', 11.0, 0.98),
+                15: ('Boiler_Vitogas200F_15kW', 15.0, 0.98),
+                18: ('Boiler_Vitogas200F_18kW', 18.0, 0.98),
+                22: ('Boiler_Vitogas200F_22kW', 22.0, 0.98),
+                29: ('Boiler_Vitogas200F_29kW', 29.0, 0.98),
+                35: ('Boiler_Vitogas200F_35kW', 35.0, 0.98),
+                42: ('Boiler_Vitogas200F_42kW', 42.0, 0.98),
+                48: ('Boiler_Vitogas200F_48kW', 48.0, 0.98),
+                60: ('Boiler_Vitogas200F_60kW', 60.0, 0.98)
                 }
 
 # Thermal storage database with thermal capacity in liters as key and model details as a tuple in values.

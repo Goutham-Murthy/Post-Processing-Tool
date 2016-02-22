@@ -220,8 +220,7 @@ class PreProcessingTool:
                          self.supply_system.ThSt.annuity if 'ThSt' in system else 0,
                          self.supply_system.SolTh.annuity if 'SolTh' in system else 0,
                          self.supply_system.ElHe.annuity if 'ElHe' in system else 0,
-                         self.supply_system.PV.annuity if 'PV' in system else 0,
-                         0])
+                         self.supply_system.PV.annuity if 'PV' in system else 0])
 
     @staticmethod
     def get_maxr(thermal_profile):
@@ -363,11 +362,9 @@ class PreProcessingTool:
         worksheet.write(0, 24, 'Sol Thermal Annuity(Euros)')
         worksheet.write(0, 25, 'El Heater Annuity(Euros)')
         worksheet.write(0, 26, 'PV Annuity(Euros)')
-        worksheet.write(0, 27, 'Self Consumption needed for break-even with \
-                                boiler(%)')
         row = 1
         for item in self.KPI:
-            for column in range(0, 28):
+            for column in range(0, 27):
                 worksheet.write(row, column, item[column])
                 column += 1
             row += 1

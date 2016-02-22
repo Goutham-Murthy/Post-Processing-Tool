@@ -133,7 +133,6 @@ class SupplySystem:
         :return:
         """
         print self.th_order, self.el_order
-
         for i in range(0, 8760):
             q_hourly = thermal_profile[i]  # Hourly thermal demand
             if 'ThSt' in self.th_order:  # Thermal loss in the thermal storage
@@ -160,29 +159,39 @@ class SupplySystem:
                 return False
 
             p_hourly = electrical_profile[i]  # Hourly electrical demand
-            if 'ElHe' in self.th_order:  # Adding electrical heater production to the electrical demand.
-                p_hourly += self.ElHe.heat_hourly[i]
+            if 'ElHe' in self.th_order:
+                p_hourly += self.ElHe.heat_hourly[i]  # Adding to the electrical demand
             # Meeting the electrical demand
             for technology in self.el_order:
-                if technology is 'PV' and p_hourly > 0:
+                if technology is 'PV':
                     if 'ElSt' in self.el_order:
                         p_hourly = self.PV.get_electricity(p_hourly, i, self.ElSt)
                     else:
                         p_hourly = self.PV.get_electricity(p_hourly, i)
-                if technology is 'CHP' and p_hourly > 0:
+                if technology is 'CHP':
                     if 'ElSt' in self.el_order:
                         p_hourly = self.OnOffCHP.get_electricity(p_hourly, i, self.ElSt)
                     else:
                         p_hourly = self.OnOffCHP.get_electricity(p_hourly, i)
-                if technology is 'ElSt' and p_hourly > 0:
+                if technology is 'ElSt':
                     p_hourly = self.ElSt.get_electricity(p_hourly, i)
                 # If electrical demand is not met, take electricity from the grid.
                 if p_hourly > 0:
                     self.ElGrid.get_electricity(p_hourly, i)
+
+            if 'ElHe' in self.th_order:
+                # If imported electricity from grid is more than consumer electrical demand, the increased demand is due
+                # to the electric heater
+                if self.ElGrid.electricity_hourly[i] > electrical_profile[i]:
+                    self.ElHe.imported_electricity += self.ElGrid.electricity_hourly[i] - electrical_profile[i]
+                # If imported electricity is lower or equal to consumer electrical demand then electric heater
+                # electricity demand is met through in-house sources.
         return True
 
     def calculate_kpi(self):
-                # calculate annuity and emissions for the technologies present in the system.
+        # calculate annuity and emissions for the technologies present in the system.
+        total_final_energy = 0
+        total_primary_energy = 0
         if 'CHP' in self.th_order:
             if 'ThSt' in self.th_order:
                 self.OnOffCHP.set_annuity(storage=True)
@@ -192,18 +201,24 @@ class SupplySystem:
             self.OnOffCHP.set_hours_on_count()
             self.total_annuity += self.OnOffCHP.annuity
             self.total_emissions += self.OnOffCHP.emissions
+            total_final_energy += self.OnOffCHP.heat_yearly
+            total_primary_energy += self.OnOffCHP.heat_yearly * 0.7
 
         if 'B' in self.th_order:
             self.B.set_annuity()
             self.B.set_emissions()
             self.total_annuity += self.B.annuity
             self.total_emissions += self.B.emissions
+            total_final_energy += self.B.heat_yearly
+            total_primary_energy += self.B.heat_yearly * 1.1
 
         if 'ElHe' in self.th_order:
             self.ElHe.set_annuity()
             self.ElHe.set_emissions()
             self.total_annuity += self.ElHe.annuity
             self.total_emissions += self.ElHe.emissions
+            total_final_energy += self.ElHe.imported_electricity
+            total_primary_energy += self.ElHe.imported_electricity * 2.8
 
         if 'ThSt' in self.th_order:
             self.ThSt.set_annuity()
@@ -212,6 +227,8 @@ class SupplySystem:
         if 'SolTh' in self.th_order:
             self.SolTh.set_annuity()
             self.total_annuity += self.SolTh.annuity
+            total_final_energy += self.SolTh.heat_yearly
+            total_primary_energy += self.SolTh.heat_yearly * 1
 
         if 'PV' in self.el_order:
             self.PV.set_annuity()
@@ -227,6 +244,7 @@ class SupplySystem:
         self.ElGrid.set_emissions()
         self.total_annuity += self.ElGrid.annuity
         self.total_emissions += self.ElGrid.emissions
+        self.total_pef = total_primary_energy / total_final_energy
 
     def write_hourly_excel(self, workbook_name, worksheet_name, thermal_profile, electrical_profile):
         """
