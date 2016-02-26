@@ -6,7 +6,8 @@ import annuity
 
 
 class Boiler(annuity.Annuity):
-    """Class representing boiler technology.
+    """
+    Class representing boiler technology.
 
     Attributes:
         model_name: Model of the boiler.
@@ -24,7 +25,7 @@ class Boiler(annuity.Annuity):
         """
         Constructor method for class Boiler.
 
-        :param model: Tuple containing information about the boiler model in the form (name, thermal capacity,
+        :param model: Tuple containing information about the boiler model in the form (model_name, thermal capacity,
                                                                                        thermal efficiency)
         :return: none
         """

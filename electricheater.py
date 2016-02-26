@@ -35,8 +35,8 @@ class ElectricHeater(annuity.Annuity):
         self.imported_electricity = 0
         self.annuity = 0
         self.emissions = 0
-        super(ElectricHeater, self).__init__(deperiod=15, effop=5, fwins=1,
-                                             finst=1)
+        super(ElectricHeater, self).__init__(deperiod=15, effop=5, fwins=1.0,
+                                             finst=1.0)
 
     def get_heat(self, required_heat, hour):
         """

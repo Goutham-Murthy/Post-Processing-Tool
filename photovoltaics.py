@@ -3,12 +3,13 @@ import annuity
 
 
 class Photovoltaics(annuity.Annuity):
-    """Class representing PV.
+    """
+    Class representing PV.
 
     Attributes:
         model: Model of the PV unit
         area: Area of the PV module [m2].
-        global_radiation: Global radiation values ofr PV
+        global_radiation: Global radiation values for PV
         electricity_yearly: Sum value of electricity provided by the PV unit over the year [kWh].
         electricity_hourly: Hourly values of the electricity provided by the PV unit [kWh].
         annuity: Annuity of the PV [Euros].
@@ -37,7 +38,7 @@ class Photovoltaics(annuity.Annuity):
         self.annuity = 0
         self.emissions = 0
         self.electricity_hourly_exported = [0]*8760
-        super(Photovoltaics, self).__init__(deperiod=25, effop=5, fwins=1, finst=0.5)
+        super(Photovoltaics, self).__init__(deperiod=25, effop=5, fwins=1.0, finst=0.5)
 
     def get_electricity(self, required_electricity, hour, ElSt=None):
         """
@@ -78,7 +79,6 @@ class Photovoltaics(annuity.Annuity):
 
     def set_emissions(self):
         """
-
         Calculates the CO2 emissions of the PV unit.
 
         :param: none
@@ -92,7 +92,7 @@ class Photovoltaics(annuity.Annuity):
 
     def set_annuity(self):
         """
-        Calculates the annuity of the CHP unit.
+        Calculates the annuity of the PV unit.
 
         :param: none
         :return: none
@@ -114,6 +114,9 @@ class Photovoltaics(annuity.Annuity):
         self.Ans = 0
 
         # Proceeds
+        # http://www.ise.fraunhofer.de/en/publications/veroeffentlichungen-pdf-dateien-en/studien-und-konzeptpapiere/
+        # recent-facts-about-photovoltaics-in-germany.pdf
+        e1 = sum(self.electricity_hourly_exported)*0.12
         self.Ane = 0
 
         self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)
