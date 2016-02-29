@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import annuity
+import database
 
 
 class ThermalStorage(annuity.Annuity):
@@ -35,7 +36,15 @@ class ThermalStorage(annuity.Annuity):
         self.heat_given = [0]*8760
         self.annuity = 0
         self.losses = 0
-        super(ThermalStorage, self).__init__(deperiod=15, effop=0, fwins=1.0, finst=2.0)
+        super(ThermalStorage, self).__init__(deperiod=database.annuity_factors['ThSt'][0],
+                                             effop=database.annuity_factors['ThSt'][1],
+                                             fwins=database.annuity_factors['ThSt'][2],
+                                             finst=database.annuity_factors['ThSt'][3],
+                                             obperiod=database.annuity_factors['Common'][0],
+                                             q=database.annuity_factors['ThSt'][4],
+                                             r=database.annuity_factors['ThSt'][5],
+                                             gas_price=database.annuity_factors['Common'][1],
+                                             electricity_price=database.annuity_factors['Common'][2])
 
     def get_heat(self, required_heat, hour):
         """

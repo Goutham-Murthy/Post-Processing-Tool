@@ -8,8 +8,8 @@ import abc
 
 
 class Annuity(object):
-    def __init__(self, deperiod, effop, fwins, finst, obperiod=10, q=1.07,
-                 r=1.03, gas_price=0.067, electricity_price=0.26):
+    def __init__(self, deperiod, effop, fwins, finst, obperiod, q,
+                 r, gas_price, electricity_price):
         """
 
         Annuity class for finding the annuity of the various technologies according to VDI 2067.

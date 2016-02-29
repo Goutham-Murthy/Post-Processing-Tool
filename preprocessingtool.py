@@ -40,7 +40,8 @@ class PreProcessingTool:
                  # max_th_technologies=2,
                  # min_th_technologies=1,
                  hourly_excels=True,
-                 location='D:/aja-gmu/Simulation_Files/Output'):
+                 location='D:/aja-gmu/Simulation_Files/Output',
+                 chp_type='ONOFF'):
         """
         Constructor class for the pre-processing tool
 
@@ -76,6 +77,7 @@ class PreProcessingTool:
         self.maxr_th_power, self.maxr_hours = self.get_maxr(thermal_profile)
         self.peak_th_power = max(thermal_profile)
         self.KPI = []
+        self.chp_type = chp_type
 
     def generate_cases(self):
         """

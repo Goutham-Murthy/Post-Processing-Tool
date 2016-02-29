@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import annuity
+import database
 
 
 class Photovoltaics(annuity.Annuity):
@@ -38,7 +39,15 @@ class Photovoltaics(annuity.Annuity):
         self.annuity = 0
         self.emissions = 0
         self.electricity_hourly_exported = [0]*8760
-        super(Photovoltaics, self).__init__(deperiod=25, effop=5, fwins=1.0, finst=0.5)
+        super(Photovoltaics, self).__init__(deperiod=database.annuity_factors['PV'][0],
+                                            effop=database.annuity_factors['PV'][1],
+                                            fwins=database.annuity_factors['PV'][2],
+                                            finst=database.annuity_factors['PV'][3],
+                                            obperiod=database.annuity_factors['Common'][0],
+                                            q=database.annuity_factors['PV'][4],
+                                            r=database.annuity_factors['PV'][5],
+                                            gas_price=database.annuity_factors['Common'][1],
+                                            electricity_price=database.annuity_factors['Common'][2])
 
     def get_electricity(self, required_electricity, hour, ElSt=None):
         """
@@ -116,8 +125,8 @@ class Photovoltaics(annuity.Annuity):
         # Proceeds
         # http://www.ise.fraunhofer.de/en/publications/veroeffentlichungen-pdf-dateien-en/studien-und-konzeptpapiere/
         # recent-facts-about-photovoltaics-in-germany.pdf
-        e1 = sum(self.electricity_hourly_exported)*0.12
-        self.Ane = 0
+        e1 = sum(self.electricity_hourly_exported)*database.annuity_factors['Common'][4]
+        self.Ane = e1*self.a*self.be
 
         self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)
         return

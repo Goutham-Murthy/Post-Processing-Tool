@@ -2,6 +2,7 @@
 import annuity
 import abc
 import math
+import database
 
 
 class CHP(annuity.Annuity):
@@ -54,7 +55,15 @@ class CHP(annuity.Annuity):
         self.electricity_yearly = 0
         self. electricity_hourly = [0]*8760
         self.electricity_hourly_exported = [0]*8760
-        super(CHP, self).__init__(deperiod=15, effop=10, fwins=1, finst=1)
+        super(CHP, self).__init__(deperiod=database.annuity_factors['CHP'][0],
+                                  effop=database.annuity_factors['CHP'][1],
+                                  fwins=database.annuity_factors['CHP'][2],
+                                  finst=database.annuity_factors['CHP'][3],
+                                  obperiod=database.annuity_factors['Common'][0],
+                                  q=database.annuity_factors['CHP'][4],
+                                  r=database.annuity_factors['CHP'][5],
+                                  gas_price=database.annuity_factors['Common'][1],
+                                  electricity_price=database.annuity_factors['Common'][2])
 
     def set_emissions(self):
         """
@@ -146,7 +155,7 @@ class CHP(annuity.Annuity):
         # Proceeds due to generated electricity consumed in-house + proceeds due to generated electricity exported
         # 10 cents for exported electricity and 5.41 cents for CHP generated electricity consumed in-house.
         e1 = (self.electricity_yearly - sum(self.electricity_hourly_exported))*0.0541 + \
-            sum(self.electricity_hourly_exported) * 10
+            sum(self.electricity_hourly_exported) * database.annuity_factors['Common'][3]
         self.Ane = e1*self.a*self.be
 
         self.annuity = self.Ane - (self.Ank + self.Anv + self.Anb + self.Ans)

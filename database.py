@@ -8,9 +8,33 @@ parameters. Is used in the pre-processing tool to initialise technologies.
 # -*- coding: utf-8 -*-
 import math
 
+SolTh_fixed_area = None
+SolTh_available_area = None
+SolTh_module_area = None
+PV_fixed_area = None
+PV_available_area = None
+PV_module_area = None
+ElHe_module_cap = None
+ElHe_fixed_cap = None
+ElSt_capacity = None
+ElSt_max_hourly_input = None
+
+
+# Annuity factors for the various technologies
+annuity_factors = {
+                    'Common': (10.00, 0.067, 0.26, 0.10, 0.12),
+                    'CHP': (15.0, 10.0, 1.0, 1.0, 1.07, 1.03),
+                    'B': (18.0, 10.0, 1.5, 1.5, 1.07, 1.03),
+                    'ThSt': (15.0, 0.0, 1.0, 2.0, 1.07, 1.03),
+                    'SolTh': (20.0, 5.0, 1.0, 0.5, 1.07, 1.03),
+                    'ElHe': (15.0, 5.0, 1.0, 1.0, 1.07, 1.03),
+                    'PV': (25.0, 5.0, 1.0, 0.5, 1.07, 1.03),
+                    'ElSt': (5.0, 0.0, 1.0, 0.5, 1.07, 1.03)
+                    }
+
 # CHP database with thermal capacity as key and model details as a tuple in values.
 # Key              : Value
-# thermal capacity : {model name, thermal capacity(kW), thermal efficiency, electrical efficiency}
+# thermal capacity : (model name, thermal capacity(kW), thermal efficiency, electrical efficiency)
 CHP_database = {
                 2.58: ('CHP_mikro_ECO_POWER_1', 2.58, 0.657, 0.263),
                 8: ('CHP_mini_ECO_POWER_3', 8, .65, .25),
@@ -119,8 +143,11 @@ def get_solth_capacity(required_capacity):
     :param required_capacity: Required area of the solar thermal unit[m2].
     :return: capacity: Area of the solar thermal unit with area closest to the required area.
     """
-    # Each module is considered to be of area 2.55 m2
-    capacity = math.floor(required_capacity/2.55)*2.55
+    if SolTh_fixed_area is not None:
+        capacity = SolTh_fixed_area
+    else:
+        # Each module is considered to be of area SolTh_module_area
+        capacity = math.floor(required_capacity/SolTh_module_area)*SolTh_module_area
     return capacity
 
 
@@ -131,8 +158,11 @@ def get_pv_capacity(required_capacity):
     :param required_capacity:  Required area of the PV[m2].
     :return: capacity:  Area of the PV unit with area closest to the required area.
     """
-    # Each module is considered to be of area 1.6434 m2
-    capacity = math.floor(required_capacity/1.6434)*1.6434
+    if PV_available_area is not None:
+        capacity = PV_fixed_area
+    else:
+        # Each module is considered to be of area PV_module_area
+        capacity = math.floor(required_capacity/PV_module_area)*PV_module_area
     return capacity
 
 
@@ -144,8 +174,11 @@ def get_elhe_capacity(required_capacity):
     :param required_capacity:  Required capacity of the electrical heater[kW].
     :return: capacity:  Capacity of the electrical heater unit with area closest to the required capacity[kW].
     """
-    # Multiples of 100
-    capacity = math.ceil(required_capacity/100.0)*100
+    if ElHe_fixed_cap is not None:
+        return ElHe_fixed_cap
+    else:
+        # Multiples of module capacity
+        capacity = math.ceil(required_capacity/ElHe_module_cap)*ElHe_module_cap
     return capacity
 
 

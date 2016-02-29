@@ -92,28 +92,22 @@ class SupplySystem:
         # ---------------------------------------------------------------------
         # Solar Thermal
         # If Solar thermal is present, dimension according to roof area
-        if 'SolTh' in th_order and 'PV' not in el_order:
-            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(10),
-                                                   self.global_radiation)
-        if 'SolTh' in th_order and 'PV' in el_order:
-            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(5),
+        if 'SolTh' in th_order:
+            self.SolTh = solarthermal.SolarThermal('Buderus SKS 5.0-s', database.get_solth_capacity(database.SolTh_available_area),
                                                    self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Photovoltaics
         # If PV is present, dimension according to roof area
-        if 'PV' in el_order and 'SolTh' not in el_order:
-            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(10),
-                                                  self.global_radiation)
-        if 'PV' in el_order and 'SolTh' in el_order:
-            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(5),
+        if 'PV' in el_order:
+            self.PV = photovoltaics.Photovoltaics('Buderus aleo s19', database.get_pv_capacity(database.PV_available_area),
                                                   self.global_radiation)
 
         # ---------------------------------------------------------------------
         # Electrical Storage
         # Dimension logic to be implemented
         if 'ElSt' in el_order:
-            self.ElSt = electricalstorage.ElectricalStorage('Model', 1000, 1)
+            self.ElSt = electricalstorage.ElectricalStorage('Model', database.ElSt_capacity, 1)
 
         # ---------------------------------------------------------------------
         # HeatPump

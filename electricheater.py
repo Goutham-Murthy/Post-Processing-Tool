@@ -3,6 +3,7 @@
 Module consists class representing electric heaters.
 """
 import annuity
+import database
 
 
 class ElectricHeater(annuity.Annuity):
@@ -35,8 +36,15 @@ class ElectricHeater(annuity.Annuity):
         self.imported_electricity = 0
         self.annuity = 0
         self.emissions = 0
-        super(ElectricHeater, self).__init__(deperiod=15, effop=5, fwins=1.0,
-                                             finst=1.0)
+        super(ElectricHeater, self).__init__(deperiod=database.annuity_factors['ElHe'][0],
+                                             effop=database.annuity_factors['ElHe'][1],
+                                             fwins=database.annuity_factors['ElHe'][2],
+                                             finst=database.annuity_factors['ElHe'][3],
+                                             obperiod=database.annuity_factors['Common'][0],
+                                             q=database.annuity_factors['ElHe'][4],
+                                             r=database.annuity_factors['ElHe'][5],
+                                             gas_price=database.annuity_factors['Common'][1],
+                                             electricity_price=database.annuity_factors['Common'][2])
 
     def get_heat(self, required_heat, hour):
         """

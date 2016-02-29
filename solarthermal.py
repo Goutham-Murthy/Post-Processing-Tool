@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import annuity
+import database
 
 
 class SolarThermal(annuity.Annuity):
@@ -34,7 +35,15 @@ class SolarThermal(annuity.Annuity):
         self.heat_yearly = 0
         self.annuity = 0
         self.emissions = 0
-        super(SolarThermal, self).__init__(deperiod=20, effop=5, fwins=1.0, finst=0.5)
+        super(SolarThermal, self).__init__(deperiod=database.annuity_factors['SolTh'][0],
+                                           effop=database.annuity_factors['SolTh'][1],
+                                           fwins=database.annuity_factors['SolTh'][2],
+                                           finst=database.annuity_factors['SolTh'][3],
+                                           obperiod=database.annuity_factors['Common'][0],
+                                           q=database.annuity_factors['SolTh'][4],
+                                           r=database.annuity_factors['SolTh'][5],
+                                           gas_price=database.annuity_factors['Common'][1],
+                                           electricity_price=database.annuity_factors['Common'][2])
 
     def get_heat(self, required_heat, hour, ThSt=None):
         """

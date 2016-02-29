@@ -3,6 +3,7 @@
 Module consists class representing boilers.
 """
 import annuity
+import database
 
 
 class Boiler(annuity.Annuity):
@@ -39,15 +40,15 @@ class Boiler(annuity.Annuity):
         self.emissions = 0
         # The depreciation period, finst, fwins and effop are different for
         # different capacities according to VDI 2067.
-        if self.th_capacity < 100:
-            super(Boiler, self).__init__(deperiod=18, effop=10, fwins=1.5,
-                                         finst=1.5)
-        elif self.th_capacity in range(100, 200):
-            super(Boiler, self).__init__(deperiod=20, effop=20, fwins=1.5,
-                                         finst=1.0)
-        else:
-            super(Boiler, self).__init__(deperiod=20, effop=20, fwins=2.0,
-                                         finst=1.0)
+        super(Boiler, self).__init__(deperiod=database.annuity_factors['B'][0],
+                                     effop=database.annuity_factors['B'][1],
+                                     fwins=database.annuity_factors['B'][2],
+                                     finst=database.annuity_factors['B'][3],
+                                     obperiod=database.annuity_factors['Common'][0],
+                                     q=database.annuity_factors['B'][4],
+                                     r=database.annuity_factors['B'][5],
+                                     gas_price=database.annuity_factors['Common'][1],
+                                     electricity_price=database.annuity_factors['Common'][2])
 
     def get_heat(self, required_heat, hour):
         """

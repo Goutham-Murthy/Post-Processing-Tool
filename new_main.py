@@ -31,15 +31,6 @@ class ControlMainWindow(QtGui.QMainWindow):
         super(ControlMainWindow, self).__init__(parent)
         self.ui = NewGUI.UiMainWindow()
         self.ui.setup_gui(self)
-        self.factors = {
-                        'CHP': (15.0, 10.0, 1.0, 1.0, 1.07, 1.03),
-                        'B': (18.0, 10.0, 1.5, 1.5, 1.07, 1.03),
-                        'ThSt': (15.0, 0.0, 1.0, 2.0, 1.07, 1.03),
-                        'SolTh': (20.0, 5.0, 1.0, 0.5, 1.07, 1.03),
-                        'ElHe': (15.0, 5.0, 1.0, 1.0, 1.07, 1.03),
-                        'PV': (25.0, 5.0, 1.0, 0.5, 1.07, 1.03),
-                        'ElSt': (5.0, 0.0, 1.0, 0.5, 1.07, 1.03)
-                        }
 
         # Connect statements for the Tab1: technologies selection
         self.ui.check_box_chp.clicked.connect(self.disable_tab)
@@ -64,26 +55,66 @@ class ControlMainWindow(QtGui.QMainWindow):
 
         # Connect statements for boiler tab
         self.ui.pushButtonAdvAnnuityBoiler.clicked.connect(self.get_annuity_factors)
-        self.ui.pushButtonAddCHP.clicked.connect(self.add_model)
+        self.ui.pushButtonAddBoiler.clicked.connect(self.add_model)
 
         # Connect statements for thermal storage tab
         self.ui.pushButtonAdvAnnuityThSt.clicked.connect(self.get_annuity_factors)
-        self.ui.pushButtonAddCHP.clicked.connect(self.add_model)
+        self.ui.pushButtonAddThSt.clicked.connect(self.add_model)
 
         # Connect statements for Solar thermal tab
         self.ui.pushButtonAdvAnnuitySolTh.clicked.connect(self.get_annuity_factors)
+        self.ui.checkBoxFixSolTh.clicked.connect(self.disable_line_edits)
 
         # Connect statements for electric heater tab
         self.ui.pushButtonAdvAnnuityElHe.clicked.connect(self.get_annuity_factors)
+        self.ui.checkBoxFixElHe.clicked.connect(self.disable_line_edits)
 
         # Connect statements for PV tab
         self.ui.pushButtonAdvAnnuityPV.clicked.connect(self.get_annuity_factors)
+        self.ui.checkBoxFixPV.clicked.connect(self.disable_line_edits)
 
         # Connect statements for electric storage tab
         self.ui.pushButtonAdvAnnuityElSt.clicked.connect(self.get_annuity_factors)
 
         self.th_technologies = []
         self.el_technologies = []
+
+    def disable_line_edits(self):
+        if self.ui.checkBoxFixSolTh.isChecked():
+            self.ui.lineEditSolThModelFix.setEnabled(True)
+            self.ui.lineEditSolThAvailArea.setEnabled(False)
+            self.ui.lineEditSolThModArea.setEnabled(False)
+        else:
+            self.ui.lineEditSolThModelFix.setText('')
+            self.ui.lineEditSolThModelFix.setEnabled(False)
+            self.ui.lineEditSolThAvailArea.setEnabled(True)
+            self.ui.lineEditSolThModArea.setEnabled(True)
+
+        if self.ui.checkBoxFixElHe.isChecked():
+            self.ui.lineEditElHeModelFix.setEnabled(True)
+            self.ui.lineEditElHeModCap.setEnabled(False)
+        else:
+            self.ui.lineEditElHeModelFix.setText('')
+            self.ui.lineEditElHeModelFix.setEnabled(False)
+            self.ui.lineEditElHeModCap.setEnabled(True)
+
+        if self.ui.checkBoxFixPV.isChecked():
+            self.ui.lineEditPVModelFix.setEnabled(True)
+            self.ui.lineEditPVAvailArea.setEnabled(False)
+            self.ui.lineEditPVModArea.setEnabled(False)
+        else:
+            self.ui.lineEditPVModelFix.setText('')
+            self.ui.lineEditPVModelFix.setEnabled(False)
+            self.ui.lineEditPVAvailArea.setEnabled(True)
+            self.ui.lineEditPVModArea.setEnabled(True)
+
+        if self.ui.checkBoxFixElSt.isChecked():
+            self.ui.lineEditElStModelFix.setEnabled(True)
+            self.ui.lineEditElStModCap.setEnabled(False)
+        else:
+            self.ui.lineEditElStModelFix.setText('')
+            self.ui.lineEditElStModelFix.setEnabled(False)
+            self.ui.lineEditElStModCap.setEnabled(True)
 
     def add_model(self):
         index = self.ui.tabWidget.currentIndex()
@@ -111,11 +142,11 @@ class ControlMainWindow(QtGui.QMainWindow):
         technology = self.get_technology_from_index(index)
         form = QtGui.QDialog()
         ui_form = annuity_window.Ui_Dialog()
-        ui_form.setupUi(form, self.factors[technology])
+        ui_form.setupUi(form, database.annuity_factors[technology])
         form.exec_()
-        self.factors[technology] = [float(ui_form.lineEditDePe.text()), float(ui_form.lineEditEffop.text()),
-                                    float(ui_form.lineEditfwins.text()), float(ui_form.lineEditfinst.text()),
-                                    float(ui_form.lineEditq.text()), float(ui_form.lineEditr.text())]
+        database.annuity_factors[technology] = [float(ui_form.lineEditDePe.text()), float(ui_form.lineEditEffop.text()),
+                                                float(ui_form.lineEditfwins.text()), float(ui_form.lineEditfinst.text()),
+                                                float(ui_form.lineEditq.text()), float(ui_form.lineEditr.text())]
 
     @staticmethod
     def get_technology_from_index(index):
@@ -181,13 +212,40 @@ class ControlMainWindow(QtGui.QMainWindow):
         """
         # Get the list of thermal and electrical technologies to be analyzed.
         self.get_technologies()
+        chp_type = ''
+        if self.ui.radioButtonContCHP.isChecked():
+            chp_type = 'Cont'
+        elif self.ui.radioButtonModCHP.isChecked():
+            chp_type = 'Mod'
+        elif self.ui.radioButtonONOFFCHP.isChecked():
+            chp_type = 'ONOFF'
+
+        if self.ui.checkBoxFixSolTh.isChecked():
+            database.SolTh_fixed_area = float(self.ui.lineEditSolThModelFix.text())
+        else:
+            database.SolTh_available_area = float(self.ui.lineEditSolThAvailArea.text())
+            database.SolTh_module_area = float(self.ui.lineEditSolThModArea.text())
+
+        if self.ui.checkBoxFixElHe.isChecked():
+            database.ElHe_fixed_cap = float(self.ui.lineEditElHeModelFix.text())
+        else:
+            database.ElHe_module_cap = float(self.ui.lineEditElHeModCap.text())
+
+        database.ElSt_capacity = float(self.ui.lineEditElStModelFix.text())
+        database.ElSt_max_hourly_input = float(self.ui.lineEditElStMaxhour.text())
+        database.annuity_factors['Common'] = (float(self.ui.lineEditObPeriod.text()),
+                                              float(self.ui.lineEditElPrice.text()),
+                                              float(self.ui.lineEditGPrice.text()),
+                                              float(self.ui.lineEditCHPFIT.text()),
+                                              float(self.ui.lineEditPVFIT.text()))
         self.worker_thread = WorkerThread(output_folder_name=self.ui.OutputFolderLineEdit.text(),
                                           weather_file=self.ui.WeatherDataLineEdit.text(),
                                           th_technologies=self.th_technologies,
                                           el_technologies=self.el_technologies,
                                           heat_profiles_file=self.ui.HProfileLineEdit.text(),
                                           electrical_profiles_file=self.ui.ElProfileLineEdit.text(),
-                                          hourly_excels=self.hourly_excels)
+                                          hourly_excels=self.hourly_excels,
+                                          chp_type=chp_type)
         self.connect(self.worker_thread, QtCore.SIGNAL("threadDone(QString)"), self.test_func,
                      QtCore.Qt.DirectConnection)
         self.worker_thread.start()
@@ -325,7 +383,7 @@ class WorkerThread(QtCore.QThread):
         hourly_excels: True if hourly excels are required. False otherwise.
     """
     def __init__(self, output_folder_name, weather_file, heat_profiles_file, electrical_profiles_file, th_technologies,
-                 el_technologies, hourly_excels):
+                 el_technologies, hourly_excels, chp_type):
         """
         Constructor method for worker thread
 
@@ -346,6 +404,7 @@ class WorkerThread(QtCore.QThread):
         self.th_technologies = th_technologies
         self.el_technologies = el_technologies
         self.hourly_excels = hourly_excels
+        self.chp_type = chp_type
 
     def run(self):
         """
@@ -373,7 +432,8 @@ class WorkerThread(QtCore.QThread):
                                                                   th_technologies=self.th_technologies,
                                                                   el_technologies=self.el_technologies,
                                                                   location=self.output_folder_name,
-                                                                  hourly_excels=self.hourly_excels)
+                                                                  hourly_excels=self.hourly_excels,
+                                                                  chp_type=self.chp_type)
             building_number.generate_cases()
 
         # Emit signal after processing is over

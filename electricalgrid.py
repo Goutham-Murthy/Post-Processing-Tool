@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import annuity
+import database
 
 
 class ElectricalGrid(annuity.Annuity):
@@ -25,7 +26,15 @@ class ElectricalGrid(annuity.Annuity):
         self.electricity_yearly = 0
         self.annuity = 0
         self.emissions = 0
-        super(ElectricalGrid, self).__init__(deperiod=0, effop=0, fwins=0, finst=0)
+        super(ElectricalGrid, self).__init__(deperiod=0.0,
+                                             effop=0.0,
+                                             fwins=0.0,
+                                             finst=0.0,
+                                             obperiod=database.annuity_factors['Common'][0],
+                                             q=1.07,
+                                             r=1.03,
+                                             gas_price=database.annuity_factors['Common'][1],
+                                             electricity_price=database.annuity_factors['Common'][2])
 
     def set_emissions(self):
         """
