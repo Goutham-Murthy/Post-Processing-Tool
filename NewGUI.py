@@ -484,7 +484,7 @@ class UiMainWindow(object):
         self.lineEditPVModelFix.setText('10.0')
 
         self.lineEditElStModelFix.setText('1000.0')
-        self.lineEditElStMaxhour.setText('20')
+        self.lineEditElStMaxhour.setText('20.0')
 
         # QtCore.QObject.connect(self.check_box_chp, QtCore.SIGNAL("clicked(bool)"), self.check_box_chp.setChecked)
         # QtCore.QObject.connect(self.check_box_boiler, QtCore.SIGNAL("clicked(bool)"), self.check_box_boiler.setChecked)

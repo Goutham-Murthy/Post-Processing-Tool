@@ -108,14 +108,6 @@ class ControlMainWindow(QtGui.QMainWindow):
             self.ui.lineEditPVAvailArea.setEnabled(True)
             self.ui.lineEditPVModArea.setEnabled(True)
 
-        if self.ui.checkBoxFixElSt.isChecked():
-            self.ui.lineEditElStModelFix.setEnabled(True)
-            self.ui.lineEditElStModCap.setEnabled(False)
-        else:
-            self.ui.lineEditElStModelFix.setText('')
-            self.ui.lineEditElStModelFix.setEnabled(False)
-            self.ui.lineEditElStModCap.setEnabled(True)
-
     def add_model(self):
         index = self.ui.tabWidget.currentIndex()
         technology = self.get_technology_from_index(index)
